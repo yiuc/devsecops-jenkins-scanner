@@ -74,8 +74,10 @@ pipeline {
         }
         stage('Joern scan on AWS CodeBuild') {
             steps {
-                echo "Build number is ${currentBuild.number}"
-                def output = runJoernBuild()
+                script{
+                    echo "Build number is ${currentBuild.number}"
+                    def output = runJoernBuild()
+                }
             }
         }
     }
