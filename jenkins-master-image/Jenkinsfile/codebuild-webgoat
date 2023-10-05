@@ -3,13 +3,13 @@ def runBuild() {
         def result = null
         try {
             result = awsCodeBuild(credentialsType: 'keys', 
-                projectName: "${params.PROJECTNAME}", 
+                projectName: "${params.WEBGOAT_PROJECTNAME}", 
                 region: "${params.AWS_REGION}", 
                 sourceControlType: 'project',
                 artifactTypeOverride: 'S3',
                 artifactPackagingOverride: 'ZIP',
                 artifactLocationOverride: "${params.ARTIFACT_S3}",
-                artifactPathOverride: "${params.PROJECTNAME}/${BUILD_ID}",
+                artifactPathOverride: "${params.WEBGOAT_PROJECTNAME}/${BUILD_ID}",
                 artifactNameOverride: 'results.zip',
                 downloadArtifacts: 'true')
             sh "echo ${result.getArtifactsLocation()}"
@@ -27,14 +27,14 @@ def runJoernBuild() {
         def result = null
         try {
             result = awsCodeBuild(credentialsType: 'keys', 
-                projectName: "${params.PROJECTNAME}", 
+                projectName: "${params.JOERN_PROJECTNAME}", 
                 region: "${params.AWS_REGION}", 
                 sourceControlType: 'jenkins', 
                 artifactTypeOverride: 'S3',
                 artifactPackagingOverride: 'ZIP',
                 artifactLocationOverride: "${params.ARTIFACT_S3}",
-                artifactPathOverride: "${params.PROJECTNAME}/${BUILD_ID}",
-                sourceLocationOverride: "${params.PROJECTNAME}/${BUILD_ID}/results.zip", 
+                artifactPathOverride: "${params.JOERN_PROJECTNAME}/${BUILD_ID}",
+                sourceLocationOverride: "${params.JOERN_PROJECTNAME}/${BUILD_ID}/results.zip", 
                 sourceTypeOverride: 'S3'
                 artifactNameOverride: 'output.zip',
                 downloadArtifacts: 'true')
@@ -51,7 +51,8 @@ def runJoernBuild() {
 pipeline {
     agent any
     parameters {
-        string(name: 'PROJECTNAME', defaultValue: 'BuildImage74257FD8-G2bjbCQI8qQK', description: 'CodeBuild project name')
+        string(name: 'WEBGOAT_PROJECTNAME', defaultValue: 'BuildImage74257FD8-G2bjbCQI8qQK', description: 'CodeBuild project name')
+        string(name: 'JOERN_PROJECTNAME', defaultValue: 'JoernScan2FFB8D2D-jOHftB2JRzvL', description: 'CodeBuild project name')
         string(name: 'ARTIFACT_S3', defaultValue: 'codebuildstack-jenkinsbuildartifactsf33606a2-3nxorqcdc3qq', description: 'CodeBuild artifact bucket')
         choice(name: 'AWS_REGION', choices: ['ap-southeast-1'], description: 'AWS region')
     }
@@ -67,7 +68,7 @@ pipeline {
                     def output = runBuild()
                     env.artifact_path = output[1]+"/"+output[0]
                     sh "ls -lR"
-                    sh "unzip -o ./${params.PROJECTNAME}/${BUILD_ID}/results.zip -d ."
+                    sh "unzip -o ./${params.WEBGOAT_PROJECTNAME}/${BUILD_ID}/results.zip -d ."
                 }
             }
         }
