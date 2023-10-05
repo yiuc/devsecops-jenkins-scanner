@@ -36,10 +36,10 @@ class CodeBuildStack(Stack):
         )
 
         # CodeBuild project that builds the webgoat jar
-        build_jar = codebuild.Project(
+        codebuild_jar = codebuild.Project(
             self,
             "BuildImage",
-            build_spec=codebuild.BuildSpec.from_asset("buildspec.yaml"),
+            build_spec=codebuild.BuildSpec.from_asset("codebuild_webgoat_buildspec.yaml"),
             source=codebuild.Source.git_hub(owner="WebGoat", repo="WebGoat"),
             #artifacts=codebuild.Artifacts.s3(bucket=s3_bucket,package_zip=True,encryption=False),
             artifacts=codebuild.Artifacts.s3(bucket=s3_bucket,encryption=False),
@@ -61,4 +61,4 @@ class CodeBuildStack(Stack):
         # cfn_codebuild.override_logical_id("codebuildbuildimagetest123")
 
         # Grants CodeBuild project access to pull/push from s3
-        s3_bucket.grant_read_write(build_jar)
+        s3_bucket.grant_read_write(codebuild_jar)
