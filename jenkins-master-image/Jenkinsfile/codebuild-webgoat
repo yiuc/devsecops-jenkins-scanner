@@ -1,3 +1,18 @@
+def runBuild() {
+    script {
+        def result = null
+        try {
+            result = awsCodeBuild(credentialsType: 'keys', projectName: 'BuildImage74257FD8-G2bjbCQI8qQK', region: 'ap-southeast-1', sourceControlType: 'project', downloadArtifacts: 'true')
+            sh "echo ${result.getArtifactsLocation()}"
+            sh "echo ${result.getBuildId()}"
+            return result.getBuildId().split(':')
+        } catch (Exception e) {
+            result=e.getCodeBuildResult()
+            currentBuild.result = "UNSTABLE"
+        }
+    }
+}
+
 pipeline {
     agent any
     stages {
@@ -6,15 +21,26 @@ pipeline {
                 echo 'Do something before'
             }
         }
-        stage('Build on AWS CodeBuild') {
+        stage('Web Goat Build on AWS CodeBuild') {
             steps {
-                awsCodeBuild credentialsType: 'keys', projectName: 'BuildImage74257FD8-G2bjbCQI8qQK', region: 'ap-southeast-1', sourceControlType: 'jenkins'
+                script{
+                    def output = runBuild()
+                    env.artifact_path = output[1]+"/"+output[0]
+                }
             }
         }
         stage('Stage after') {
             steps {
-                echo 'Do something after'
+                echo "Build number is ${currentBuild.number}"
+                sh "unzip ${currentBuild.number}/${env.artifact_path} -d ."
+                sh "ls -l ${currentBuild.number}/${env.artifact_path}"
+                sh "ls -l"
             }
+        }
+    }
+    post { 
+        always { 
+            cleanWs()
         }
     }
 }
