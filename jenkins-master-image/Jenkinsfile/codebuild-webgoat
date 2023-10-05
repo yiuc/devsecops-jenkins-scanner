@@ -1,0 +1,20 @@
+pipeline {
+    agent any
+    stages {
+        stage('Stage before') {
+            steps {
+                echo 'Do something before'
+            }
+        }
+        stage('Build on AWS CodeBuild') {
+            steps {
+                awsCodeBuild credentialsType: 'keys', projectName: 'BuildImage74257FD8-G2bjbCQI8qQK', region: 'ap-southeast-1', sourceControlType: 'jenkins'
+            }
+        }
+        stage('Stage after') {
+            steps {
+                echo 'Do something after'
+            }
+        }
+    }
+}

@@ -7,7 +7,7 @@
     <configVersion>2</configVersion>
     <userRemoteConfigs>
       <hudson.plugins.git.UserRemoteConfig>
-        <url>https://github.com/tkgregory/jenkins-with-codebuild.git</url>
+        <url>https://github.com/yiuc/devsecops-jenkins-scanner.git</url>
       </hudson.plugins.git.UserRemoteConfig>
     </userRemoteConfigs>
     <branches>
