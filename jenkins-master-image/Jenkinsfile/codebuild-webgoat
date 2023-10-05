@@ -2,7 +2,16 @@ def runBuild() {
     script {
         def result = null
         try {
-            result = awsCodeBuild(credentialsType: 'keys', projectName: 'BuildImage74257FD8-G2bjbCQI8qQK', region: 'ap-southeast-1', sourceControlType: 'project', downloadArtifacts: 'true')
+            result = awsCodeBuild(credentialsType: 'keys', 
+                projectName: "${params.PROJECTNAME}", 
+                region: "${params.AWS_REGION}", 
+                sourceControlType: 'project',
+                artifactTypeOverride: 'S3',
+                artifactPackagingOverride: 'ZIP',
+                artifactLocationOverride: "${params.ARTIFACT_S3}",
+                artifactPathOverride: "${params.PROJECTNAME}/${BUILD_ID}",
+                artifactNameOverride: 'results.zip',
+                downloadArtifacts: 'true')
             sh "echo ${result.getArtifactsLocation()}"
             sh "echo ${result.getBuildId()}"
             return result.getBuildId().split(':')
@@ -15,6 +24,11 @@ def runBuild() {
 
 pipeline {
     agent any
+    parameters {
+        string(name: 'PROJECTNAME', defaultValue: 'BuildImage74257FD8-G2bjbCQI8qQK', description: 'CodeBuild project name')
+        string(name: 'ARTIFACT_S3', defaultValue: 'codebuildstack-jenkinsbuildartifactsf33606a2-3nxorqcdc3qq', description: 'CodeBuild artifact bucket')
+        choice(name: 'AWS_REGION', choices: ['ap-southeast-1'], description: 'AWS region')
+    }
     stages {
         stage('Stage before') {
             steps {
@@ -32,15 +46,14 @@ pipeline {
         stage('Stage after') {
             steps {
                 echo "Build number is ${currentBuild.number}"
-                sh "unzip ${currentBuild.number}/${env.artifact_path} -d ."
-                sh "ls -l ${currentBuild.number}/${env.artifact_path}"
-                sh "ls -l"
+                sh "ls -lR"
+                sh "unzip ./${params.PROJECTNAME}/${BUILD_ID}/results.zip -d ."
             }
         }
     }
-    // post { 
-    //     always { 
-    //         deleteDir()
-    //     }
-    // }
+    post { 
+        always { 
+            deleteDir()
+        }
+    }
 }
