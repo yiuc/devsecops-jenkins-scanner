@@ -14,8 +14,9 @@ phases:
     commands:
       #- docker pull 909987576667.dkr.ecr.ap-southeast-1.amazonaws.com/joern-scanner
       #- docker run --rm -v $(pwd):/app:rw -w /app -t 909987576667.dkr.ecr.ap-southeast-1.amazonaws.com/joern-scanner ls -l
+      - export jarfile = $(ls -1 *.jar)
       - docker pull ghcr.io/joernio/joern:nightly
-      - docker run --rm -v $(pwd):/app:rw -w /app -t ghcr.io/joernio/joern:nightly ls -l
+      - docker run --rm -v $(pwd):/app:rw -w /app -t ghcr.io/joernio/joern:nightly /joern/joern-scan $jarfile
   post_build:
     commands:
       - echo Build completed on $(date)
