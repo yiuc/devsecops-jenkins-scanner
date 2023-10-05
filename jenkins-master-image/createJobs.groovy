@@ -31,7 +31,7 @@ pipelineJob('AWS CodeBuild webgoat') {
 pipelineJob('pipelineJob') {
     definition {
         cps {
-            script(readFileFromWorkspace('jenkins-master-image/Jenkinsfile/pipelineJob.groovy'))
+            script(readFileFromWorkspace('jenkins-master-image/Jenkinsfile/pipelineJob'))
             sandbox()
         }
     }
