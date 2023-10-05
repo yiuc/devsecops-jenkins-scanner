@@ -1,0 +1,5 @@
+aws-codebuild:0.59
+authorize-project:1.4.0
+job-dsl:1.81
+workflow-aggregator:590.v6a_d052e5a_a_b_5
+git:5.0.0
