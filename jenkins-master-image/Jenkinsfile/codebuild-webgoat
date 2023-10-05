@@ -22,6 +22,32 @@ def runBuild() {
     }
 }
 
+def runJoernBuild() {
+    script {
+        def result = null
+        try {
+            result = awsCodeBuild(credentialsType: 'keys', 
+                projectName: "${params.PROJECTNAME}", 
+                region: "${params.AWS_REGION}", 
+                sourceControlType: 'jenkins', 
+                artifactTypeOverride: 'S3',
+                artifactPackagingOverride: 'ZIP',
+                artifactLocationOverride: "${params.ARTIFACT_S3}",
+                artifactPathOverride: "${params.PROJECTNAME}/${BUILD_ID}",
+                sourceLocationOverride: "${params.PROJECTNAME}/${BUILD_ID}/results.zip", 
+                sourceTypeOverride: 'S3'
+                artifactNameOverride: 'output.zip',
+                downloadArtifacts: 'true')
+            sh "echo ${result.getArtifactsLocation()}"
+            sh "echo ${result.getBuildId()}"
+            return result.getBuildId().split(':')
+        } catch (Exception e) {
+            result=e.getCodeBuildResult()
+            currentBuild.result = "UNSTABLE"
+        }
+    }    
+}
+
 pipeline {
     agent any
     parameters {
@@ -40,14 +66,15 @@ pipeline {
                 script{
                     def output = runBuild()
                     env.artifact_path = output[1]+"/"+output[0]
+                    sh "ls -lR"
+                    sh "unzip -o ./${params.PROJECTNAME}/${BUILD_ID}/results.zip -d ."
                 }
             }
         }
-        stage('Stage after') {
+        stage('Joern scan on AWS CodeBuild') {
             steps {
                 echo "Build number is ${currentBuild.number}"
-                sh "ls -lR"
-                sh "unzip ./${params.PROJECTNAME}/${BUILD_ID}/results.zip -d ."
+                def output = runJoernBuild()
             }
         }
     }

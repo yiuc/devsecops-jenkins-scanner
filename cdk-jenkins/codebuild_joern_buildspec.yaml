@@ -1,0 +1,21 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - nohup /usr/local/bin/dockerd --host=unix:///var/run/docker.sock --host=tcp://127.0.0.1:2375 --storage-driver=overlay2 &
+      - timeout 15 sh -c "until docker info; do echo .; sleep 1; done"
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws --version
+      - pwd && ls -l
+  build:
+    commands:
+      #- docker pull 909987576667.dkr.ecr.ap-southeast-1.amazonaws.com/joern-scanner
+      #- docker run --rm -v $(pwd):/app:rw -w /app -t 909987576667.dkr.ecr.ap-southeast-1.amazonaws.com/joern-scanner ls -l
+      - docker pull ghcr.io/joernio/joern:nightly
+      - docker run --rm -v $(pwd):/app:rw -w /app -t ghcr.io/joernio/joern:nightly ls -l
+  post_build:
+    commands:
+      - echo Build completed on $(date)
