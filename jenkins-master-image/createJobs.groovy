@@ -13,18 +13,26 @@ pipelineJob('AWS CodeBuild example using GitHub') {
         }
     }
 }
-pipelineJob('AWS CodeBuild example using S3') {
+pipelineJob('AWS CodeBuild webgoat') {
     definition {
         cpsScm {
             scm {
                 git {
                     remote {
-                        url 'https://github.com/tkgregory/spring-boot-api-example.git'
+                        url 'https://github.com/yiuc/devsecops-jenkins-scanner.git'
                     }
-                    branch 'simplified-for-ci'
-                    scriptPath('Jenkinsfile-codebuild-s3')
+                    branch 'main'
+                    scriptPath('Jenkinsfile/codebuild-webgoat')
                 }
             }
+        }
+    }
+}
+pipelineJob('pipelineJob') {
+    definition {
+        cps {
+            script(readFileFromWorkspace('pipelineJob.groovy'))
+            sandbox()
         }
     }
 }
