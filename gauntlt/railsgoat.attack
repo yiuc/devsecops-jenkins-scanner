@@ -1,0 +1,32 @@
+Feature: Attack suite targeting railsgoat application
+  Background: Common attack values
+    Given "arachni" is installed
+      And "curl" is installed
+      And the following profile:
+        | name | value                                  |
+        | url    | http://railsgoat.svc.test.local:3000 |
+
+  @reallyslow @railsgoat
+  Scenario: Look for xss vulnerabilities and verify no issues are found
+    When I launch an "arachni" attack with:
+      """
+      arachni --checks=xss* --scope-page-limit 100 <url>
+      """
+    Then the output should contain:
+      """
+      0 issues were detected.
+      """
+
+  @slow
+  Scenario Outline: Verify server responds correctly to various HTTP methods
+
+    When I launch a "curl" attack with:
+      """
+      curl -i -X <method> <url>
+      """
+    Then the output should contain "<response>"
+    Examples:
+      | method | response                  |
+      | TRACK  | 500 Internal Server Error | 
+      | GET    | 200 OK                    |
+      | PATCH  | 404 Not Found             |

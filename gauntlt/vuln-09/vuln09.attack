@@ -1,0 +1,11 @@
+@final
+Feature: hello world with gauntlt using generic command line attack
+  Scenario:
+    When I launch a "generic" attack with:
+      """
+      python GAUNTLTPATH/gauntlt/vuln-09/helper.py
+      """
+    Then the output should contain:
+      """
+      True
+      """
