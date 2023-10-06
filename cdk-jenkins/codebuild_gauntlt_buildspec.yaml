@@ -1,0 +1,25 @@
+version: 0.2
+
+env:
+  shell: bash
+
+phases:
+  install:
+    commands:
+      - echo Preparing for security tests...
+      - gem install gauntlt --version 1.0.13
+      - gauntlt -s && gauntlt --list
+      - pip install requests
+  pre_build:
+    commands:
+      - aws --version
+      - pwd && ls -l
+  build:
+    commands:
+      - echo Security test started on `date`
+      - echo Testing the application with Gauntlt...
+      - var=$(pwd) && grep -rl GAUNTLTPATH . | xargs sed -i "s|GAUNTLTPATH|${var}|g"
+      - bash ./gauntlt/execute_gauntlt.sh
+  post_build:
+    commands:
+      - echo Build completed on $(date)

@@ -90,11 +90,11 @@ class CodeBuildStack(Stack):
             },
         )
 
-        cdk_build = codebuild.Project(
+        codebuild_gaulant = codebuild.Project(
             self,
-            "WebCoatBuild",
+            "GauntltTest",
             build_spec=codebuild.BuildSpec.from_asset(
-                "codebuild_webgoat_stack_buildspec.yaml"
+                "codebuild_gauntlt_buildspec.yaml"
             ),
             source=codebuild.Source.git_hub(
                 owner="yiuc", repo="devsecops-jenkins-scanner"
@@ -104,6 +104,7 @@ class CodeBuildStack(Stack):
                 compute_type=codebuild.ComputeType.MEDIUM,
                 privileged=True,
             ),
+            vpc=vpc
         )
 
         joern_ecr_repository.grant_pull(codebuild_joern)
@@ -115,5 +116,6 @@ class CodeBuildStack(Stack):
         s3_bucket.grant_read_write(codebuild_jar)
         s3_bucket.grant_read_write(codebuild_joern)
 
-        CfnOutput(self, "BuildProjectName", value=codebuild_jar.project_name)
+        CfnOutput(self, "WebGoatBuildProjectName", value=codebuild_jar.project_name)
         CfnOutput(self, "JoernScanProjectName", value=codebuild_joern.project_name)
+        CfnOutput(self, "GauntltProjectName", value=codebuild_gaulant.project_name)

@@ -1,19 +1,24 @@
 version: 0.2
 
+env:
+  shell: bash
+
 phases:
   install:
     commands:
-      - nohup /usr/local/bin/dockerd --host=unix:///var/run/docker.sock --host=tcp://127.0.0.1:2375 --storage-driver=overlay2 &
-      - timeout 15 sh -c "until docker info; do echo .; sleep 1; done"
+      - npm install aws-cdk@2.96.1 -g
+      - pip install constructs
+      - pip install aws-cdk-lib
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
       - aws --version
       - pwd && ls -l
+      - cdk --version
   build:
     commands:
-      - docker build -t cdk-cli local/.
-      - docker run --rm -v $(pwd)/cdk-jenkins:/app:rw -w /app -t cdk-cli cdk deploy --require-approval never WebGoatStack
+      - cd $(pwd)/cdk-jenkins
+      - cdk deploy --require-approval never WebGoatStack
   post_build:
     commands:
       - echo Build completed on $(date)
