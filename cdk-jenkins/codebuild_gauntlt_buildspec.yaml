@@ -6,10 +6,8 @@ env:
 phases:
   install:
     commands:
-      - echo Preparing for security tests...
-      - gem install gauntlt --version 1.0.13
-      - gauntlt -s && gauntlt --list
-      - pip install requests
+      - nohup /usr/local/bin/dockerd --host=unix:///var/run/docker.sock --host=tcp://127.0.0.1:2375 --storage-driver=overlay2 &
+      - timeout 15 sh -c "until docker info; do echo .; sleep 1; done"
   pre_build:
     commands:
       - aws --version
@@ -18,8 +16,8 @@ phases:
     commands:
       - echo Security test started on `date`
       - echo Testing the application with Gauntlt...
-      - var=$(pwd) && grep -rl GAUNTLTPATH . | xargs sed -i "s|GAUNTLTPATH|${var}|g"
-      - bash ./gauntlt/execute_gauntlt.sh
+      - docker pull gauntlt/gauntlt
+      - docker run --rm -v $(pwd):/app -w /app --entrypoint /bin/bash gauntlt/gauntlt gauntlt/execute_gauntlt.sh 
   post_build:
     commands:
       - echo Build completed on $(date)
