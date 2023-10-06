@@ -12,11 +12,10 @@ phases:
       - pwd && ls -l
   build:
     commands:
-      #- docker pull 909987576667.dkr.ecr.ap-southeast-1.amazonaws.com/joern-scanner
-      #- docker run --rm -v $(pwd):/app:rw -w /app -t 909987576667.dkr.ecr.ap-southeast-1.amazonaws.com/joern-scanner ls -l
-      - export jarfile = $(ls -1 *.jar)
+      #- git clone https://github.com/WebGoat/WebGoat.git
       - docker pull ghcr.io/joernio/joern:nightly
-      - docker run --rm -v $(pwd):/app:rw -w /app -t ghcr.io/joernio/joern:nightly /joern/joern-scan $jarfile
+      - export jarfile=$(ls -1 *.jar)
+      - docker run --rm -v $(pwd)/src:/app:rw -w /app -t ghcr.io/joernio/joern:nightly joern-scan $jarfile --language java
   post_build:
     commands:
       - echo Build completed on $(date)
