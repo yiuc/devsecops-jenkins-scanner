@@ -1,15 +1,15 @@
-def runBuild() {
+def runProjectBuild(String projectname) {
     script {
         def result = null
         try {
             result = awsCodeBuild(credentialsType: 'keys', 
-                projectName: "${params.WEBGOAT_PROJECTNAME}", 
+                projectName: "${projectname}", 
                 region: "${params.AWS_REGION}", 
                 sourceControlType: 'project',
                 artifactTypeOverride: 'S3',
                 artifactPackagingOverride: 'ZIP',
                 artifactLocationOverride: "${params.ARTIFACT_S3}",
-                artifactPathOverride: "${params.WEBGOAT_PROJECTNAME}/${BUILD_ID}",
+                artifactPathOverride: "${projectname}/${BUILD_ID}",
                 artifactNameOverride: 'results.zip',
                 downloadArtifacts: 'true')
             sh "echo ${result.getArtifactsLocation()}"
@@ -22,18 +22,18 @@ def runBuild() {
     }
 }
 
-def runJoernBuild() {
+def runS3Build(String projectname) {
     script {
         def result = null
         try {
             result = awsCodeBuild(credentialsType: 'keys', 
-                projectName: "${params.JOERN_PROJECTNAME}", 
+                projectName: "${projectname}", 
                 region: "${params.AWS_REGION}", 
                 sourceControlType: 'jenkins', 
                 artifactTypeOverride: 'S3',
                 artifactPackagingOverride: 'ZIP',
                 artifactLocationOverride: "${params.ARTIFACT_S3}",
-                artifactPathOverride: "${params.JOERN_PROJECTNAME}/${BUILD_ID}",
+                artifactPathOverride: "${projectname}/${BUILD_ID}",
                 sourceLocationOverride: "${params.ARTIFACT_S3}/${params.WEBGOAT_PROJECTNAME}/${BUILD_ID}/results.zip", 
                 localSourcePath: "./${params.WEBGOAT_PROJECTNAME}/${BUILD_ID}/results.zip",
                 sourceTypeOverride: 'S3',
@@ -54,33 +54,38 @@ pipeline {
     parameters {
         string(name: 'WEBGOAT_PROJECTNAME', defaultValue: 'BuildImage74257FD8-G2bjbCQI8qQK', description: 'CodeBuild project name')
         string(name: 'JOERN_PROJECTNAME', defaultValue: 'JoernScan2FFB8D2D-jOHftB2JRzvL', description: 'CodeBuild project name')
+        string(name: 'GAUNTLT_PROJECTNAME', defaultValue: 'GauntltTest1B81A692-NWS5bdECwxTe', description: 'CodeBuild project name')
         string(name: 'ARTIFACT_S3', defaultValue: 'codebuildstack-jenkinsbuildartifactsf33606a2-3nxorqcdc3qq', description: 'CodeBuild artifact bucket')
         choice(name: 'AWS_REGION', choices: ['ap-southeast-1'], description: 'AWS region')
     }
     stages {
-        stage('Stage before') {
-            steps {
-                echo 'Do something before'
-            }
-        }
-        stage('Web Goat Build on AWS CodeBuild') {
+        stage('Build webgoat jar') {
             steps {
                 script{
-                    def output = runBuild()
+                    def output = runProjectBuild(params.WEBGOAT_PROJECTNAME)
                     env.artifact_path = output[1]+"/"+output[0]
                     sh "ls -lR"
                     sh "unzip -o ./${params.WEBGOAT_PROJECTNAME}/${BUILD_ID}/results.zip -d ."
                 }
             }
         }
-        stage('Joern scan on AWS CodeBuild') {
+        stage('Joern scan webgoat') {
             steps {
                 script{
                     echo "Build number is ${currentBuild.number}"
-                    def output = runJoernBuild()
+                    def output = runS3Build(params.JOERN_PROJECTNAME)
                 }
             }
         }
+        stage('Gauntlt test webgoat') {
+            steps {
+                script{
+                    echo "Build number is ${currentBuild.number}"
+                    def output = runProjectBuild(params.GAUNTLT_PROJECTNAME)
+                }
+            }
+        }
+
     }
     post { 
         always { 
