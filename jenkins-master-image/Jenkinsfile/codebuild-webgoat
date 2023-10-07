@@ -54,7 +54,6 @@ pipeline {
     parameters {
         string(name: 'WEBGOAT_PROJECTNAME', defaultValue: 'BuildImage74257FD8-G2bjbCQI8qQK', description: 'CodeBuild project name')
         string(name: 'JOERN_PROJECTNAME', defaultValue: 'JoernScan2FFB8D2D-jOHftB2JRzvL', description: 'CodeBuild project name')
-        string(name: 'GAUNTLT_PROJECTNAME', defaultValue: 'GauntltTest1B81A692-NWS5bdECwxTe', description: 'CodeBuild project name')
         string(name: 'ARTIFACT_S3', defaultValue: 'codebuildstack-jenkinsbuildartifactsf33606a2-3nxorqcdc3qq', description: 'CodeBuild artifact bucket')
         choice(name: 'AWS_REGION', choices: ['ap-southeast-1'], description: 'AWS region')
     }
@@ -64,7 +63,6 @@ pipeline {
                 script{
                     def output = runProjectBuild(params.WEBGOAT_PROJECTNAME)
                     env.artifact_path = output[1]+"/"+output[0]
-                    sh "ls -lR"
                     sh "unzip -o ./${params.WEBGOAT_PROJECTNAME}/${BUILD_ID}/results.zip -d ."
                 }
             }
@@ -77,15 +75,6 @@ pipeline {
                 }
             }
         }
-        stage('Gauntlt test webgoat') {
-            steps {
-                script{
-                    echo "Build number is ${currentBuild.number}"
-                    def output = runProjectBuild(params.GAUNTLT_PROJECTNAME)
-                }
-            }
-        }
-
     }
     post { 
         always { 

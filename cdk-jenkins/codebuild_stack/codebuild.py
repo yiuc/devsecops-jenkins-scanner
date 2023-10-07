@@ -71,9 +71,8 @@ class CodeBuildStack(Stack):
             self,
             "JoernScan",
             build_spec=codebuild.BuildSpec.from_asset("codebuild_joern_buildspec.yaml"),
-            # source=codebuild.Source.git_hub(owner="joernio", repo="joern"),
             source=codebuild.Source.s3(
-                bucket=s3_bucket, path="BuildImage74257FD8-G2bjbCQI8qQK/35/results.zip"
+                bucket=s3_bucket, path="BuildImage74257FD8-G2bjbCQI8qQK/59/results.zip"
             ),
             environment=codebuild.BuildEnvironment(
                 privileged=True,

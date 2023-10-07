@@ -14,8 +14,8 @@ phases:
     commands:
       #- git clone https://github.com/WebGoat/WebGoat.git
       - docker pull ghcr.io/joernio/joern:nightly
-      - export jarfile=$(ls -1 *.jar)
-      - docker run --rm -v $(pwd)/src:/app:rw -w /app -t ghcr.io/joernio/joern:nightly joern-scan $jarfile --language java
+      - export jarfile=$(ls -1 *.jar) && echo $jarfile
+      - docker run --rm -v $(pwd):/app:rw -w /app -t ghcr.io/joernio/joern:nightly joern-scan $jarfile
   post_build:
     commands:
       - echo Build completed on $(date)

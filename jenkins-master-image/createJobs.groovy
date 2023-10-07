@@ -1,13 +1,13 @@
-pipelineJob('AWS CodeBuild example using GitHub') {
+pipelineJob('Gauntlt test webgoat') {
     definition {
         cpsScm {
             scm {
                 git {
                     remote {
-                        url 'https://github.com/tkgregory/spring-boot-api-example.git'
+                        url 'https://github.com/yiuc/devsecops-jenkins-scanner.git'
                     }
-                    branch 'simplified-for-ci'
-                    scriptPath('Jenkinsfile-codebuild-github')
+                    branch 'main'
+                    scriptPath('jenkins-master-image/Jenkinsfile/gauntlt-webgoat')
                 }
             }
         }
