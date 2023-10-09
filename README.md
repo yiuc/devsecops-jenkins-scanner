@@ -1,6 +1,6 @@
 # devsecops-jenkins-scanner
 
 - using CDK to create the resource
--- AWS base resources
--- Jenkins Master
--- Codebuild
+    - AWS base resources
+    - Jenkins Master
+    - Codebuild
