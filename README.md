@@ -105,10 +105,32 @@ jenkins-master-image
 
 ![](./docs/image/pipeline_flow.drawio.png)
 
-![](./docs/image/jenkins_main_page.png)
-1. Execute the seed-job to provision the pipeline in Jenkins.
+1. access the Jenkins using NLB dns name
 
-## Clean Action
+![](./docs/image/jenkins_main_page.png)
+
+2. Execute the seed-job to provision the pipeline in Jenkins.
+3. Execute `AWS_CodeBuild_webgoat` pipeline
+
+![](./docs/image/jenkins_execution_error.png)
+
+4. update the codebuild name in parameter/configure/groovy 
+
+![](./docs/image/codebuild_output.png)
+
+![](./docs/image/jenkins_paramater.png)
+
+### CodeBuild spec
+
+
+
+### Challenge
+
+1. Update your codebuild name in groovy and reflect in Jenkins Master
+2. Speed up the deployment time 
+2. Collect the codebuld log and show in Jenkins
+
+## Clean up Action
 
 To perform a clean action, follow these steps:
 
@@ -117,6 +139,7 @@ To perform a clean action, follow these steps:
     `cdk destoy --all`
 
 2. Check the Log group for any remaining logs.
+3. check you bill in next day
 
 ## Reference
 

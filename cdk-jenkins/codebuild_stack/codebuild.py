@@ -53,7 +53,7 @@ class CodeBuildStack(Stack):
             artifacts=codebuild.Artifacts.s3(bucket=s3_bucket, encryption=False),
             environment=codebuild.BuildEnvironment(
                 privileged=True,
-                compute_type=codebuild.ComputeType.MEDIUM,
+                compute_type=codebuild.ComputeType.SMALL,
                 build_image=codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
             ),
             environment_variables={
@@ -76,7 +76,7 @@ class CodeBuildStack(Stack):
             ),
             environment=codebuild.BuildEnvironment(
                 privileged=True,
-                compute_type=codebuild.ComputeType.LARGE,
+                compute_type=codebuild.ComputeType.SMALL,
                 build_image=codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
             ),
             environment_variables={
@@ -118,3 +118,4 @@ class CodeBuildStack(Stack):
         CfnOutput(self, "WebGoatBuildProjectName", value=codebuild_jar.project_name)
         CfnOutput(self, "JoernScanProjectName", value=codebuild_joern.project_name)
         CfnOutput(self, "GauntltProjectName", value=codebuild_gaulant.project_name)
+        CfnOutput(self, "S3ArtifactName", value=s3_bucket.bucket_name)

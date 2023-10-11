@@ -14,7 +14,7 @@ def runProjectBuild(String projectname) {
                 downloadArtifacts: 'true')
             sh "echo ${result.getArtifactsLocation()}"
             sh "echo ${result.getBuildId()}"
-            return result.getBuildId().split(':')
+            return result.getBuildId()
         } catch (Exception e) {
             result=e.getCodeBuildResult()
             currentBuild.result = "UNSTABLE"
@@ -41,7 +41,7 @@ def runS3Build(String projectname) {
                 downloadArtifacts: 'true')
             sh "echo ${result.getArtifactsLocation()}"
             sh "echo ${result.getBuildId()}"
-            return result.getBuildId().split(':')
+            return result.getBuildId()
         } catch (Exception e) {
             result=e.getCodeBuildResult()
             currentBuild.result = "UNSTABLE"
@@ -62,7 +62,7 @@ pipeline {
             steps {
                 script{
                     def output = runProjectBuild(params.WEBGOAT_PROJECTNAME)
-                    env.artifact_path = output[1]+"/"+output[0]
+                    //sh "aws codebuild batch-get-builds --ids ${output} --output text --query 'builds[].logs.groupName' | xargs -I {} aws logs tail {} --output text"
                     sh "unzip -o ./${params.WEBGOAT_PROJECTNAME}/${BUILD_ID}/results.zip -d ."
                 }
             }
