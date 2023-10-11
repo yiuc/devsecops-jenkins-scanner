@@ -10,14 +10,14 @@ The objective of this installation guide is to demonstrate how to use AWS native
 
 The following technical stack will be used in this installation:
 
-- Joern - application scanning
-- [Integrating AWS CodeBuild into Jenkins pipelines](https://jenkinshero.com/integrating-aws-codebuild-into-jenkins-pipelines/)
-- [Jenkins Configuration as Code](https://abrahamntd.medium.com/automating-jenkins-setup-using-docker-and-jenkins-configuration-as-code-897e6640af9d)
-- CDK
-- Jenkins
-- Groovy
-- Codebuild
+- CDK - IaC
+- Jenkins - Pipeline software
+    - [Jenkins Configuration as Code](https://abrahamntd.medium.com/automating-jenkins-setup-using-docker-and-jenkins-configuration-as-code-897e6640af9d)
+    - Groovy
+- Codebuild - Pipeine agent
+    - [Integrating AWS CodeBuild into Jenkins pipelines](https://jenkinshero.com/integrating-aws-codebuild-into-jenkins-pipelines/)
 - WebGoat
+- Joern - application scanning
 
 ### 2.1 Overall Architecture
 
