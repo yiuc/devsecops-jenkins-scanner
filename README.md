@@ -37,18 +37,18 @@ devsecops-jenkins-scanner
 └── local - local docker development
 ```
 
-## 4 Prerequisites
+## 3 Prerequisites
 
 Before starting the installation, ensure that the following prerequisites are met:
 
 - Docker installed
 - AWS account with CLI access (`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`)
 
-## 5 Provision
+## 4 Provision
 
 Follow the steps below to install and configure the DevSecOps Jenkins scanner.
 
-### 5.1 AWS Resource Creation
+### 4.1 AWS Resource Creation
 
 1. Download the source code from the repository: `git clone <https://github.com/yiuc/devsecops-jenkins-scanner`>
 2. Set up the environment:
@@ -85,9 +85,9 @@ Follow the steps below to install and configure the DevSecOps Jenkins scanner.
     ```
     
 
-### 5.2 Jenkins Master
+### 4.2 Jenkins Master
 
-#### 5.2.1 Folder Layout
+#### 4.2.1 Folder Layout
 
 ```
 jenkins-master-image
@@ -101,7 +101,7 @@ jenkins-master-image
 └── seedJob.xml - Basic setup and create the seedjob
 ```
 
-#### 5.2.2 Jenkins pipleine overview
+#### 4.2.2 Jenkins pipleine overview
 
 ![](./docs/image/pipeline_flow.drawio.png)
 
