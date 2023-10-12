@@ -52,7 +52,7 @@ Follow the steps below to install and configure the DevSecOps Jenkins scanner.
 
 #### 4.1.1 Manual setup in local
 
-1. Download the source code from the repository: `git clone <https://github.com/yiuc/devsecops-jenkins-scanner`>
+1. Download the source code from the repository: `git clone https://github.com/yiuc/devsecops-jenkins-scanner`
 2. Set up the environment:
     
     ```bash
@@ -72,9 +72,9 @@ Follow the steps below to install and configure the DevSecOps Jenkins scanner.
 4. Manually build the Jenkins master image and upload it to ECR:
     
     ```bash
-    docker build --platform linux/amd64 -t jenkins-master jenkins-master-image/. \\
-    aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ACCOUNT.dkr.ecr.$AWS_REGION.amazonaws.com \\
-    docker tag jenkins-master:latest $ACCOUNT.dkr.ecr.$AWS_REGION.amazonaws.com/jenkins-master:latest \\
+    docker build --platform linux/amd64 -t jenkins-master jenkins-master-image/. \
+    aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ACCOUNT.dkr.ecr.$AWS_REGION.amazonaws.com \
+    docker tag jenkins-master:latest $ACCOUNT.dkr.ecr.$AWS_REGION.amazonaws.com/jenkins-master:latest \
     docker push $ACCOUNT.dkr.ecr.$AWS_REGION.amazonaws.com/jenkins-master:latest
     
     ```
