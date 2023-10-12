@@ -50,6 +50,8 @@ Follow the steps below to install and configure the DevSecOps Jenkins scanner.
 
 ### 4.1 AWS Resource Creation
 
+#### 4.1.1 Manual setup in local
+
 1. Download the source code from the repository: `git clone <https://github.com/yiuc/devsecops-jenkins-scanner`>
 2. Set up the environment:
     
@@ -84,6 +86,46 @@ Follow the steps below to install and configure the DevSecOps Jenkins scanner.
     
     ```
     
+#### 4.1.2 Provision AWS resources
+
+Follow the steps below to install and configure the DevSecOps Jenkins scanner:
+
+1. Build the local Docker image and access the base environment:
+    
+    ```bash
+    docker build -t my-aws-cli-image ./devsecops-jenkins-scanner/local
+    docker run -v $(pwd):/app --rm -it my-aws-cli-image:latest sh
+    
+    ```
+    
+2. Copy the `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` into the Docker container and set the environment variables:
+    
+    ```bash
+    export AWS_PAGER=
+    export AWS_REGION=ap-southeast-1
+    export ACCOUNT=$(aws sts get-caller-identity --out json --query 'Account' | sed 's/"//g')
+    export CDK_DEFAULT_ACCOUNT=$ACCOUNT
+    export CDK_DEFAULT_REGION=$AWS_REGION
+    export CURRENT_IP=$(curl ifconfig.io)
+    
+    echo -e "$ACCOUNT \\n$CURRENT_IP"
+    
+    ```
+    
+3. Initialize the CDK Toolkit:
+    
+    ```bash
+    cdk bootstrap aws://$ACCOUNT/$AWS_REGION
+    
+    ```
+    
+4. Deploy the stack using CDK:
+    
+    ```bash
+    cdk synth --context current_ip=$CURRENT_IP
+    cdk deploy --context current_ip=$CURRENT_IP --require-approval never --all
+    
+    ```
 
 ### 4.2 Jenkins Master
 
@@ -101,7 +143,48 @@ jenkins-master-image
 └── seedJob.xml - Basic setup and create the seedjob
 ```
 
-#### 4.2.2 Jenkins pipleine overview
+#### 4.2.2 Jenkins in CDK
+
+```py
+        cluster = ecs.Cluster(
+            self, "jenkins-cluster", vpc=vpc, cluster_name="jenkins-cluster"
+        )
+
+        file_system = efs.FileSystem(
+            self, "JenkinsFileSystem", vpc=vpc, removal_policy=RemovalPolicy.DESTROY
+        )
+
+        task_definition = ecs.FargateTaskDefinition(
+            self,
+            "jenkins-task-definition",
+            memory_limit_mib=4096,
+            cpu=2048,
+            family="jenkins",
+        )
+
+        task_definition.add_volume(
+            name="jenkins-home",
+            efs_volume_configuration=ecs.EfsVolumeConfiguration(
+                file_system_id=file_system.file_system_id,
+                transit_encryption="ENABLED",
+                authorization_config=ecs.AuthorizationConfig(
+                    access_point_id=access_point.access_point_id, iam="ENABLED"
+                ),
+            ),
+        )
+
+        ecr_repository = ecr.Repository.from_repository_name(
+            self, "jenkins-master", "jenkins-master")
+
+        container_definition = task_definition.add_container(
+            "jenkins",
+            #image=ecs.ContainerImage.from_registry("jenkins/jenkins:lts"),
+            image = ecs.ContainerImage.from_ecr_repository(ecr_repository, tag="latest"),
+            logging=ecs.LogDriver.aws_logs(stream_prefix="jenkins"),
+        )
+```
+
+#### 4.2.3 Jenkins pipleine overview
 
 ![](./docs/image/pipeline_flow.drawio.png)
 
@@ -120,9 +203,62 @@ jenkins-master-image
 
 ![](./docs/image/jenkins_paramater.png)
 
-### CodeBuild spec
+### 4.3 CodeBuild Deep dive
 
+#### 4.3.1 Build spce
 
+```yaml
+version: 0.2 
+
+phases:
+  install:
+    commands:
+      # enable docker in docker command
+      - nohup /usr/local/bin/dockerd --host=unix:///var/run/docker.sock --host=tcp://127.0.0.1:2375 --storage-driver=overlay2 &
+      - timeout 15 sh -c "until docker info; do echo .; sleep 1; done"
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws --version
+      - pwd && ls -l
+  build:
+    commands:
+      # download the image
+      - docker pull ghcr.io/joernio/joern:nightly
+      # find the target source form artifact
+      - export jarfile=$(ls -1 *.jar) && echo $jarfile
+      - docker run --rm -v $(pwd):/app:rw -w /app -t ghcr.io/joernio/joern:nightly joern-scan $jarfile
+  post_build:
+    commands:
+      - echo Build completed on $(date)
+```
+
+#### 4.3.2 codebuild in CDK
+
+```py
+        # code build project for execute joern
+        codebuild_joern = codebuild.Project(
+            self,
+            "JoernScan",
+            build_spec=codebuild.BuildSpec.from_asset("codebuild_joern_buildspec.yaml"),
+            source=codebuild.Source.s3(
+                bucket=s3_bucket, path="BuildImage74257FD8-G2bjbCQI8qQK/59/results.zip"
+            ),
+            environment=codebuild.BuildEnvironment(
+                privileged=True,
+                compute_type=codebuild.ComputeType.SMALL,
+                build_image=codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
+            ),
+            environment_variables={
+                "AWS_ACCOUNT_ID": codebuild.BuildEnvironmentVariable(
+                    value=os.getenv("CDK_DEFAULT_ACCOUNT") or ""
+                ),
+                "REGION": codebuild.BuildEnvironmentVariable(
+                    value=os.getenv("CDK_DEFAULT_REGION") or ""
+                ),
+            },
+        )
+```
 
 ### Challenge
 
@@ -137,9 +273,9 @@ To perform a clean action, follow these steps:
 1. Destroy the provisioned resources.
 
     `cdk destoy --all`
-
-2. Check the Log group for any remaining logs.
-3. check you bill in next day
+2. Manual clean up ECR and S3
+3. Check the Log group for any remaining logs.
+4. check you bill in next day
 
 ## Reference
 
