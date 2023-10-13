@@ -118,8 +118,12 @@ Follow the steps below to install and configure the DevSecOps Jenkins scanner:
     cdk bootstrap aws://$ACCOUNT/$AWS_REGION
     
     ```
+
+4. Use cloudformation list command to check the `CDKToolkit` exist
+
+    `aws cloudformation list-stacks --stack-status-filter CREATE_COMPLETE --query "StackSummaries[].[StackName,StackStatus]" --output table`
     
-4. Deploy the stack using CDK:
+5. Deploy the stack using CDK:
     
     ```bash
     cdk synth --context current_ip=$CURRENT_IP
@@ -127,6 +131,9 @@ Follow the steps below to install and configure the DevSecOps Jenkins scanner:
     cdk deploy --context current_ip=$CURRENT_IP --all
     
     ```
+
+6. Capture the `JenkinsMasterStack.LoadBalancerDNSName` output to access the Jenkins Master server
+
 
 ### 4.2 Jenkins Master
 
