@@ -118,6 +118,7 @@ Follow the steps below to install and configure the DevSecOps Jenkins scanner:
 3. Initialize the CDK Toolkit:
     
     ```bash
+    cd cdk-jenkins
     cdk bootstrap aws://$ACCOUNT/$AWS_REGION
     
     ```
