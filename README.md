@@ -93,7 +93,7 @@ Follow the steps below to install and configure the DevSecOps Jenkins scanner:
 1. Build the local Docker image and access the base environment:
     
     ```bash
-    docker build -t my-aws-cli-image ./devsecops-jenkins-scanner/local
+    docker build -t my-aws-cli-image ./local
     docker run -v $(pwd):/app --rm -it my-aws-cli-image:latest sh
     
     ```
