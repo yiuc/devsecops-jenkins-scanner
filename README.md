@@ -10,14 +10,14 @@ The objective of this installation guide is to demonstrate how to use AWS native
 
 The following technical stack will be used in this installation:
 
-- CDK - IaC
-- Jenkins - Pipeline software
+- [CDK](https://aws.amazon.com/cdk/?nc1=h_ls) - IaC, provides a library of constructs that cover many AWS services and features
+- Jenkins - Jenkins is an open source automation server. It helps automate the parts of software development
     - [Jenkins Configuration as Code](https://abrahamntd.medium.com/automating-jenkins-setup-using-docker-and-jenkins-configuration-as-code-897e6640af9d)
     - Groovy
-- Codebuild - Pipeine agent
+- [Codebuild](https://aws.amazon.com/codebuild/) - Build Server / Jenkins agent
     - [Integrating AWS CodeBuild into Jenkins pipelines](https://jenkinshero.com/integrating-aws-codebuild-into-jenkins-pipelines/)
-- WebGoat
-- Joern - application scanning
+- [Joern](https://github.com/joernio/joern) - analyzing source code, bytecode, and binary executables
+- [WebGoat](https://owasp.org/www-project-webgoat/) - insecure application that allows developers to test vulnerabilities commonly
 
 ### 2.1 Overall Architecture
 
@@ -123,7 +123,8 @@ Follow the steps below to install and configure the DevSecOps Jenkins scanner:
     
     ```bash
     cdk synth --context current_ip=$CURRENT_IP
-    cdk deploy --context current_ip=$CURRENT_IP --require-approval never --all
+    #cdk deploy --context current_ip=$CURRENT_IP --require-approval never --all #without confirmation
+    cdk deploy --context current_ip=$CURRENT_IP --all
     
     ```
 
