@@ -109,8 +109,11 @@ Follow the steps below to install and configure the DevSecOps Jenkins scanner:
 1. Build the local Docker image and access the base environment:
     
     ```bash
-    docker build -t my-aws-cli-image ./devsecops-jenkins-scanner/local
+    docker build -t my-aws-cli-image ./local
     docker run -v $(pwd):/app --rm -it my-aws-cli-image:latest sh
+
+    for window
+    docker run -v %cd%:/app --rm -it my-aws-cli-image:latest sh
     
     ```
     
@@ -131,6 +134,7 @@ Follow the steps below to install and configure the DevSecOps Jenkins scanner:
 3. Initialize the CDK Toolkit:
     
     ```bash
+    cd cdk-jenkins
     cdk bootstrap aws://$ACCOUNT/$AWS_REGION
     
     ```
@@ -326,5 +330,3 @@ To perform a clean action, follow these steps:
 - [Integrating AWS CodeBuild into Jenkins pipelines](https://jenkinshero.com/integrating-aws-codebuild-into-jenkins-pipelines/)
 - [Environments - AWS Cloud Development Kit (AWS CDK) v2](https://docs.aws.amazon.com/cdk/v2/guide/environments.html)
 - [AWS CDK Toolkit (cdk command) - AWS Cloud Development Kit (AWS CDK) v2](https://docs.aws.amazon.com/cdk/v2/guide/cli.html#cli-config)
-
----
