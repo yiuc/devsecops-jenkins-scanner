@@ -72,7 +72,7 @@ class JenkinsMasterStack(Stack):
         container_definition = task_definition.add_container(
             "jenkins",
             #image=ecs.ContainerImage.from_registry("jenkins/jenkins:lts"),
-            image = ecs.ContainerImage.from_ecr_repository(ecr_repository, tag="latest"),
+            image = ecs.ContainerImage.from_ecr_repository(ecr_repository, tag="1"),
             logging=ecs.LogDriver.aws_logs(stream_prefix="jenkins"),
         )
 
