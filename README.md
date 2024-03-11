@@ -41,6 +41,7 @@ devsecops-jenkins-scanner
 
 Before starting the installation, ensure that the following prerequisites are met:
 
+- Linux base platform (Recommend to use [cloud9](https://aws.amazon.com/pm/cloud9/) )
 - Docker installed
 - AWS account with CLI access (`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`)
 
@@ -50,7 +51,17 @@ Follow the steps below to install and configure the DevSecOps Jenkins scanner.
 
 ### 4.1 AWS Resource Creation
 
-#### 4.1.1 Manual setup in local
+1. Create Environment in Cloud9 thorugh AWS console
+2. Follow the instruction to fill in the require input
+    - Name
+    - Instance Type (Recommend t3.small)
+    - Platform - Amazon Linux 2023
+    - use AWS System Manager (SSM) for connection
+    - VPC can be default VPC
+    - Recommend to add the storage to 30GB
+3. open your cloud9 instance in console and start below configuration
+
+#### 4.1.1 Manual setup in cloud9
 
 1. Download the source code from the repository: `git clone https://github.com/yiuc/devsecops-jenkins-scanner`
 2. Set up the environment:
@@ -59,24 +70,21 @@ Follow the steps below to install and configure the DevSecOps Jenkins scanner.
     export AWS_PAGER=
     export AWS_REGION=ap-southeast-1
     export ACCOUNT=$(aws sts get-caller-identity --out json --query 'Account' | sed 's/"//g')
-    
     ```
     
 3. Create a private ECR repository for the "jenkins-master" image:
     
     ```bash
     aws ecr create-repository --repository-name jenkins-master --image-scanning-configuration scanOnPush=false --region $AWS_REGION
-    
     ```
     
 4. Manually build the Jenkins master image and upload it to ECR:
     
     ```bash
-    docker build --platform linux/amd64 -t jenkins-master jenkins-master-image/. \
-    aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ACCOUNT.dkr.ecr.$AWS_REGION.amazonaws.com \
-    docker tag jenkins-master:latest $ACCOUNT.dkr.ecr.$AWS_REGION.amazonaws.com/jenkins-master:latest \
-    docker push $ACCOUNT.dkr.ecr.$AWS_REGION.amazonaws.com/jenkins-master:latest
-    
+    docker build --platform linux/amd64 -t jenkins-master jenkins-master-image/. ;\
+    aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ACCOUNT.dkr.ecr.$AWS_REGION.amazonaws.com ; \
+    docker tag jenkins-master:latest $ACCOUNT.dkr.ecr.$AWS_REGION.amazonaws.com/jenkins-master:latest ; \
+    docker push $ACCOUNT.dkr.ecr.$AWS_REGION.amazonaws.com/jenkins-master:latest ;
     ```
     
 5. List the Jenkins-master image in your ECR repository:
@@ -90,7 +98,7 @@ Follow the steps below to install and configure the DevSecOps Jenkins scanner.
 
 Follow the steps below to install and configure the DevSecOps Jenkins scanner:
 
-1. Build the local Docker image and access the base environment:
+<!-- 1. Build the local Docker image and access the base environment:
     
     ```bash
     docker build -t my-aws-cli-image ./local
@@ -99,17 +107,19 @@ Follow the steps below to install and configure the DevSecOps Jenkins scanner:
     for window
     docker run -v %cd%:/app --rm -it my-aws-cli-image:latest sh
     
-    ```
+    ``` -->
     
 2. Copy the `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` into the Docker container and set the environment variables:
     
+    `curl ifconfig.io` get your local ipaddress
+
     ```bash
     export AWS_PAGER=
     export AWS_REGION=ap-southeast-1
     export ACCOUNT=$(aws sts get-caller-identity --out json --query 'Account' | sed 's/"//g')
     export CDK_DEFAULT_ACCOUNT=$ACCOUNT
     export CDK_DEFAULT_REGION=$AWS_REGION
-    export CURRENT_IP=$(curl ifconfig.io)
+    export CURRENT_IP=$YOUIP
     
     echo -e "$ACCOUNT \\n$CURRENT_IP"
     
@@ -118,6 +128,8 @@ Follow the steps below to install and configure the DevSecOps Jenkins scanner:
 3. Initialize the CDK Toolkit:
     
     ```bash
+    pip install aws-cdk-lib
+    pip install constructs
     cd cdk-jenkins
     cdk bootstrap aws://$ACCOUNT/$AWS_REGION
     
@@ -284,7 +296,7 @@ To perform a clean action, follow these steps:
 
 1. Destroy the provisioned resources.
 
-    `cdk destoy --all`
+    `cdk destroy --all`
 2. Manual clean up ECR and S3
 3. Check the Log group for any remaining logs.
 4. check you bill in next day
