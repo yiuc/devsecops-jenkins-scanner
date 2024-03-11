@@ -2,13 +2,9 @@
 
 This guide provides step-by-step instructions for setting up a DevSecOps Jenkins scanner using AWS native services and Jenkins. Follow these instructions to automate security scanning in a webgoat application using CDK for infrastructure provisioning and Jenkins DSL for pipeline configuration.
 
----
-
 ## 1 Objective
 
 The objective of this installation guide is to demonstrate how to use AWS native services and Jenkins to start automation security scanning in a webgoat application. The guide will cover the use of CDK for infrastructure provisioning and Jenkins DSL for pipeline configuration.
-
----
 
 ## 2 Technical Stack
 
@@ -23,14 +19,10 @@ The following technical stack will be used in this installation:
 - [Joern](https://github.com/joernio/joern) - analyzing source code, bytecode, and binary executables
 - [WebGoat](https://owasp.org/www-project-webgoat/) - insecure application that allows developers to test vulnerabilities commonly
 
----
-
 ### 2.1 Overall Architecture
 
 The stack will be provisioned using CDK. Please refer to the provided architecture diagram for an overview.
 ![](./docs/image/infra.drawio.png)
-
----
 
 ### 2.2 Folder Layout
 
@@ -45,8 +37,6 @@ devsecops-jenkins-scanner
 └── local - local docker development
 ```
 
----
-
 ## 3 Prerequisites
 
 Before starting the installation, ensure that the following prerequisites are met:
@@ -55,13 +45,9 @@ Before starting the installation, ensure that the following prerequisites are me
 - Docker installed
 - AWS account with CLI access (`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`)
 
----
-
 ## 4 Provision
 
 Follow the steps below to install and configure the DevSecOps Jenkins scanner.
-
----
 
 ### 4.1 AWS Resource Creation
 
@@ -107,9 +93,7 @@ Follow the steps below to install and configure the DevSecOps Jenkins scanner.
     aws ecr list-images --repository-name jenkins-master --region $AWS_REGION --output table
     
     ```
-
----
-
+    
 #### 4.1.2 Provision AWS resources
 
 Follow the steps below to install and configure the DevSecOps Jenkins scanner:
@@ -166,7 +150,6 @@ Follow the steps below to install and configure the DevSecOps Jenkins scanner:
 
 6. Capture the `JenkinsMasterStack.LoadBalancerDNSName` output to access the Jenkins Master server
 
----
 
 ### 4.2 Jenkins Master
 
@@ -183,8 +166,6 @@ jenkins-master-image
 ├── plugins.txt - the plugin will be installed in Jenkins Master
 └── seedJob.xml - Basic setup and create the seedjob
 ```
-
----
 
 #### 4.2.2 Jenkins in CDK
 
@@ -227,8 +208,6 @@ jenkins-master-image
         )
 ```
 
----
-
 #### 4.2.3 Jenkins pipleine overview
 
 ![](./docs/image/pipeline_flow.drawio.png)
@@ -247,8 +226,6 @@ jenkins-master-image
 ![](./docs/image/codebuild_output.png)
 
 ![](./docs/image/jenkins_paramater.png)
-
----
 
 ### 4.3 CodeBuild Deep dive
 
@@ -280,8 +257,6 @@ phases:
       - echo Build completed on $(date)
 ```
 
----
-
 #### 4.3.2 codebuild in CDK
 
 ```py
@@ -309,15 +284,11 @@ phases:
         )
 ```
 
----
-
 ### Challenge
 
 1. Update your codebuild name in groovy and reflect in Jenkins Master
 2. Speed up the deployment time 
 2. Collect the codebuld log and show in Jenkins
-
----
 
 ## Clean up Action
 
@@ -329,8 +300,6 @@ To perform a clean action, follow these steps:
 2. Manual clean up ECR and S3
 3. Check the Log group for any remaining logs.
 4. check you bill in next day
-
----
 
 ## Reference
 
