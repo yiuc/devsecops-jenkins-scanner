@@ -25,8 +25,8 @@ def runProjectBuild(String projectname) {
 pipeline {
     agent any
     parameters {
-        string(name: 'GAUNTLT_PROJECTNAME', defaultValue: 'GauntltTest1B81A692-NWS5bdECwxTe', description: 'CodeBuild project name')
-        string(name: 'ARTIFACT_S3', defaultValue: 'codebuildstack-jenkinsbuildartifactsf33606a2-3nxorqcdc3qq', description: 'CodeBuild artifact bucket')
+        string(name: 'GAUNTLT_PROJECTNAME', defaultValue: '%GauntltProjectName', description: 'CodeBuild project name')
+        string(name: 'ARTIFACT_S3', defaultValue: '%S3ArtifactName', description: 'CodeBuild artifact bucket')
         choice(name: 'AWS_REGION', choices: ['ap-southeast-1'], description: 'AWS region')
     }
     stages {
