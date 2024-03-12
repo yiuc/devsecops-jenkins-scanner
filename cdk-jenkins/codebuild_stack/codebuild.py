@@ -29,6 +29,15 @@ class CodeBuildStack(Stack):
             self, "joern-scanner", "joern-scanner"
         )
 
+        # create a ecr repository the name is behave-image and variable is behave_ecr_repository
+        behave_ecr_repository = ecr.Repository(
+            self,
+            "behave-image",
+            image_scan_on_push=True,
+            image_tag_mutability=ecr.TagMutability.MUTABLE,
+            removal_policy=cdk.RemovalPolicy.DESTROY,
+        )
+
         # create s3 bucket the name is jeknins-build-artifacts
         s3_bucket = s3.Bucket(
             self,
@@ -88,6 +97,62 @@ class CodeBuildStack(Stack):
                 ),
             },
         )
+        joern_ecr_repository.grant_pull(codebuild_joern)
+
+        # code build project for execute codebuild_behave_image_build_buildspec.yaml
+        codebuild_behave_image_build = codebuild.Project(
+            self,
+            "BehaveImageBuild",
+            build_spec=codebuild.BuildSpec.from_asset(
+                "codebuild_behave_image_build_buildspec.yaml"
+            ),
+            source=codebuild.Source.git_hub(
+                owner="yiuc", repo="devsecops-jenkins-scanner", branch_or_ref="develop"
+            ),
+            environment=codebuild.BuildEnvironment(
+                build_image=codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
+                compute_type=codebuild.ComputeType.MEDIUM,
+                privileged=True,
+            ),
+            environment_variables={
+                "ECR_URL": codebuild.BuildEnvironmentVariable(
+                    value=behave_ecr_repository.repository_uri
+                ),
+                "AWS_ACCOUNT_ID": codebuild.BuildEnvironmentVariable(
+                    value=os.getenv("CDK_DEFAULT_ACCOUNT") or ""
+                ),
+            },
+        )
+        behave_ecr_repository.grant_pull_push(codebuild_behave_image_build)
+
+        # code build project for execute codebuild_behave_scanning_buildspec.yaml
+        codebuild_behave_scanning = codebuild.Project(
+            self,
+            "BehaveScanning",
+            build_spec=codebuild.BuildSpec.from_asset(
+                "codebuild_behave_scanning_buildspec.yaml"
+            ),
+            source=codebuild.Source.git_hub(
+                owner="yiuc", repo="devsecops-jenkins-scanner", branch_or_ref="develop"
+            ),
+            environment=codebuild.BuildEnvironment(
+                build_image=codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
+                compute_type=codebuild.ComputeType.MEDIUM,
+                privileged=True,
+            ),
+            environment_variables={
+                "ECR_URL": codebuild.BuildEnvironmentVariable(
+                    value=behave_ecr_repository.repository_uri
+                ),
+                "AWS_ACCOUNT_ID": codebuild.BuildEnvironmentVariable(
+                    value=os.getenv("CDK_DEFAULT_ACCOUNT") or ""
+                ),
+                "APP_URL": codebuild.BuildEnvironmentVariable(
+                    value="http://webgoat.svc.test.local:8080/WebGoat"
+                ),
+            }
+        )
+        behave_ecr_repository.grant_pull(codebuild_behave_scanning)
 
         codebuild_gaulant = codebuild.Project(
             self,
@@ -103,10 +168,8 @@ class CodeBuildStack(Stack):
                 compute_type=codebuild.ComputeType.MEDIUM,
                 privileged=True,
             ),
-            vpc=vpc
+            vpc=vpc,
         )
-
-        joern_ecr_repository.grant_pull(codebuild_joern)
 
         # cfn_codebuild = build_jar.node.default_child
         # cfn_codebuild.override_logical_id("codebuildbuildimagetest123")
@@ -118,4 +181,7 @@ class CodeBuildStack(Stack):
         CfnOutput(self, "WebGoatBuildProjectName", value=codebuild_jar.project_name)
         CfnOutput(self, "JoernScanProjectName", value=codebuild_joern.project_name)
         CfnOutput(self, "GauntltProjectName", value=codebuild_gaulant.project_name)
+        CfnOutput(self, "BehaveImageBuildProjectName", value=codebuild_behave_image_build.project_name)
+        CfnOutput(self, "BehaveScanningProjectName", value=codebuild_behave_scanning.project_name)
+        CfnOutput(self, "BehaveECR",value=behave_ecr_repository.repository_uri)
         CfnOutput(self, "S3ArtifactName", value=s3_bucket.bucket_name)
