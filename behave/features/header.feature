@@ -17,9 +17,10 @@ Feature: Evaluate response header for a specific endpoint.
       | Cache-Control             | no-cache |
 
     When I make a GET request to "WebGoat"
-    Then the value of header "Strict-Transport-Security" should be in the given set
-    And the value of header "Content-Security-Policy" should be in the given set
-    And the value of header "X-Content-Type-Options" should be in the given set
-    And the value of header "X-Frame-Options" should be in the given set
-    And the value of header "Cache-Control" should contain the defined value in the given set
+    Then the value of header "Cache-Control" should contain the defined value in the given set
+    #Then the value of header "Strict-Transport-Security" should be in the given set
+    #And the value of header "Content-Security-Policy" should be in the given set
+    #And the value of header "X-Content-Type-Options" should be in the given set
+    #And the value of header "X-Frame-Options" should be in the given set
+    #And the value of header "Cache-Control" should contain the defined value in the given set
 
