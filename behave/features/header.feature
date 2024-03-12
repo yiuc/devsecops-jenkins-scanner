@@ -16,7 +16,7 @@ Feature: Evaluate response header for a specific endpoint.
       | X-Frame-Options           | DENY |
       | Cache-Control             | no-cache |
 
-    When I make a GET request to "_health"
+    When I make a GET request to "WebGoat"
     Then the value of header "Strict-Transport-Security" should be in the given set
     And the value of header "Content-Security-Policy" should be in the given set
     And the value of header "X-Content-Type-Options" should be in the given set

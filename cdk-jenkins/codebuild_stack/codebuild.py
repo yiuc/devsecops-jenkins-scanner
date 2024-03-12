@@ -148,9 +148,10 @@ class CodeBuildStack(Stack):
                     value=os.getenv("CDK_DEFAULT_ACCOUNT") or ""
                 ),
                 "APP_URL": codebuild.BuildEnvironmentVariable(
-                    value="http://webgoat.svc.test.local:8080/WebGoat"
+                    value="http://webgoat.svc.test.local:8080"
                 ),
-            }
+            },
+            vpc=vpc,
         )
         behave_ecr_repository.grant_pull(codebuild_behave_scanning)
 

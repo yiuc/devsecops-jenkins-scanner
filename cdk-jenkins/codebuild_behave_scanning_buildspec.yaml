@@ -8,7 +8,7 @@ phases:
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
-      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
       - aws --version
       - pwd && ls -lR
   build:
@@ -20,6 +20,7 @@ phases:
         docker run \
           --rm \
           -e APP_URL=$APP_URL \
+          -e PYTHONPATH=/app/behave/libs \
           -v $(pwd):/app \
           $ECR_URL:latest \
           behave /app/behave/features | tee o utput.txt
