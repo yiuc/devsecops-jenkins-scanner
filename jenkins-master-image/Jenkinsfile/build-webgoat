@@ -52,6 +52,7 @@ def runS3Build(String projectname) {
 pipeline {
     agent any
     parameters {
+        string(name: 'BEHAVE_PROJECTNAME', defaultValue: '%BehaveScanningProjectName', description: 'CodeBuild project name')
         string(name: 'WEBGOAT_PROJECTNAME', defaultValue: '%WebGoatBuildProjectName', description: 'CodeBuild project name')
         string(name: 'JOERN_PROJECTNAME', defaultValue: '%JoernScanProjectName', description: 'CodeBuild project name')
         string(name: 'ARTIFACT_S3', defaultValue: '%S3ArtifactName', description: 'CodeBuild artifact bucket')
@@ -67,11 +68,21 @@ pipeline {
                 }
             }
         }
-        stage('Joern scan webgoat') {
-            steps {
-                script{
-                    echo "Build number is ${currentBuild.number}"
-                    def output = runS3Build(params.JOERN_PROJECTNAME)
+        parallel{
+            stage('Joern scan webgoat') {
+                steps {
+                    script{
+                        echo "Build number is ${currentBuild.number}"
+                        def output = runS3Build(params.JOERN_PROJECTNAME)
+                    }
+                }
+            }
+            stage('Behave test webgoat') {
+                steps {
+                    script{
+                        echo "Build number is ${currentBuild.number}"
+                        def output = runProjectBuild(params.BEHAVE_PROJECTNAME)
+                    }
                 }
             }
         }

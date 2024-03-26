@@ -48,6 +48,7 @@ Before starting the installation, ensure that the following prerequisites are me
 - Linux base platform (Recommend to use [cloud9](https://aws.amazon.com/pm/cloud9/) )
 - Docker installed
 - AWS account with CLI access (`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`)
+- fork https://github.com/yiuc/devsecops-jenkins-scanner to under your manage cause you will require to make change on the repo
 
 ## 4 Provision
 
@@ -67,7 +68,7 @@ Follow the steps below to install and configure the DevSecOps Jenkins scanner.
 
 #### 4.1.1 Manual setup in cloud9
 
-1. Download the source code from the repository: `git clone https://github.com/yiuc/devsecops-jenkins-scanner`
+1. Download the source code from the repository: `git clone https://github.com/$YOURID/devsecops-jenkins-scanner`
 2. Set up the environment:
     
     ```bash
@@ -75,6 +76,8 @@ Follow the steps below to install and configure the DevSecOps Jenkins scanner.
     export AWS_REGION=ap-southeast-1
     export ACCOUNT=$(aws sts get-caller-identity --out json --query 'Account' | sed 's/"//g')
     ```
+
+    `sed -i 's/yiuc/YOURID/g' **/*`
     
 3. Create a private ECR repository for the "jenkins-master" image:
     
@@ -123,7 +126,7 @@ Follow the steps below to install and configure the DevSecOps Jenkins scanner:
     export ACCOUNT=$(aws sts get-caller-identity --out json --query 'Account' | sed 's/"//g')
     export CDK_DEFAULT_ACCOUNT=$ACCOUNT
     export CDK_DEFAULT_REGION=$AWS_REGION
-    export CURRENT_IP=$YOUIP
+    export CURRENT_IP=$YOURIP
     
     echo -e "$ACCOUNT \\n$CURRENT_IP"
     
@@ -170,6 +173,8 @@ jenkins-master-image
 ├── plugins.txt - the plugin will be installed in Jenkins Master
 └── seedJob.xml - Basic setup and create the seedjob
 ```
+update the codebuild
+update createJobs.groovy to your repo
 
 #### 4.2.2 Jenkins in CDK
 
