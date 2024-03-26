@@ -16,5 +16,5 @@ while read -r line; do
 
     # Assign the value to a variable with the key as the variable name
     #declare "${key}=${value}"
-    sed -i "s/%$key/$value/g" ../jenkins-master-image/Jenkinsfile/*
+    sed -i "s/'%$key'/$value/g" ../jenkins-master-image/Jenkinsfile/*
 done <<< "$output"
