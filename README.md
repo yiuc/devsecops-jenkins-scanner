@@ -4,6 +4,10 @@ This guide provides step-by-step instructions for setting up a DevSecOps Jenkins
 
 ## 1 Objective
 
+Most enterprises start their DevSecOps journey by introducing test automation and security scanners into the CI/CD pipeline. While security scanners can be very useful when used correctly with rule customization, it irequires advanced security and software engineering skills such as the understanding of complex exploits and AST (Abstract Syntax Tree), and it does not cater for testing of security related business logic or application specific corner cases. Furthermore, these tools are generally not flexible enough to cater for management of complicated test cases at scale. As a result, most enterprises face the same challenges right after starting their DevSecOps journey to shift-left security, because simply plugging in scanners and throwing scan results to developers is not shift-left, it's shifting responsibility.
+
+BDD (Behavior-Driven Development) approach to security can be a saver to the life of a software engineer in dealing with security problems. Have a look at our sharing in AWS Summit here - "https://hktw-resources.awscloud.com/aws-summit-hong-kong-2023/dealing-with-challenges-of-devsecops-practice-in-enterprises" in which we introduced the concept of BDD security test automation as well as fuzzing practiced for long by big tech and mega FSI. This time, we will guide you through a DIY lab in which you can get your hands dirty and try to build your first security test cases.
+
 The objective of this installation guide is to demonstrate how to use AWS native services and Jenkins to start automation security scanning in a webgoat application. The guide will cover the use of CDK for infrastructure provisioning and Jenkins DSL for pipeline configuration.
 
 ## 2 Technical Stack
