@@ -77,7 +77,7 @@ Follow the steps below to install and configure the DevSecOps Jenkins scanner.
     export ACCOUNT=$(aws sts get-caller-identity --out json --query 'Account' | sed 's/"//g')
     ```
 
-    `sed -i 's/yiuc/YOURID/g' **/*`
+    `sed -i 's/yiuc/YOURID/gp' **/*`
     
 3. Create a private ECR repository for the "jenkins-master" image:
     
@@ -109,10 +109,10 @@ Follow the steps below to install and configure the DevSecOps Jenkins scanner:
     
     ```bash
     docker build -t my-aws-cli-image ./local
-    docker run -v $(pwd):/app --rm -it my-aws-cli-image:latest sh
+    docker run -v $(pwd):/app --rm -it my-aws-cli-image:latest bash
 
     for window
-    docker run -v %cd%:/app --rm -it my-aws-cli-image:latest sh
+    docker run -v %cd%:/app --rm -it my-aws-cli-image:latest bash
     
     ``` -->
     

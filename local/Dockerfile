@@ -16,6 +16,8 @@ RUN apk -v --no-cache --update add \
         py3-pip \
         curl \
         aws-cli \
+        jq \
+        bash \
         && \
     rm -rf /var/cache/apk/* && \
     npm install -g "aws-cdk@$AWS_CDK_VERSION" && \
