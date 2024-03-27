@@ -23,7 +23,7 @@ phases:
           -e PYTHONPATH=/app/behave/libs \
           -v $(pwd):/app \
           $ECR_URL:latest \
-          behave /app/behave/features | tee o utput.txt
+          behave /app/behave/features | tee output.txt
       - echo "Command output:"
       - cat output.txt
   post_build:
