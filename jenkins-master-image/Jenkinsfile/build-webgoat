@@ -68,20 +68,22 @@ pipeline {
                 }
             }
         }
-        parallel{
-            stage('Joern scan webgoat') {
-                steps {
-                    script{
-                        echo "Build number is ${currentBuild.number}"
-                        def output = runS3Build(params.JOERN_PROJECTNAME)
+        stage('Scanning'){
+            parallel{
+                stage('Joern scan webgoat') {
+                    steps {
+                        script{
+                            echo "Build number is ${currentBuild.number}"
+                            def output = runS3Build(params.JOERN_PROJECTNAME)
+                        }
                     }
                 }
-            }
-            stage('Behave test webgoat') {
-                steps {
-                    script{
-                        echo "Build number is ${currentBuild.number}"
-                        def output = runProjectBuild(params.BEHAVE_PROJECTNAME)
+                stage('Behave test webgoat') {
+                    steps {
+                        script{
+                            echo "Build number is ${currentBuild.number}"
+                            def output = runProjectBuild(params.BEHAVE_PROJECTNAME)
+                        }
                     }
                 }
             }
