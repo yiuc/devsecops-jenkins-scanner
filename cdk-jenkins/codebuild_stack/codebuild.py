@@ -62,7 +62,7 @@ class CodeBuildStack(Stack):
             artifacts=codebuild.Artifacts.s3(bucket=s3_bucket, encryption=False),
             environment=codebuild.BuildEnvironment(
                 privileged=True,
-                compute_type=codebuild.ComputeType.SMALL,
+                compute_type=codebuild.ComputeType.MEDIUM,
                 build_image=codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
             ),
             environment_variables={
@@ -85,7 +85,7 @@ class CodeBuildStack(Stack):
             ),
             environment=codebuild.BuildEnvironment(
                 privileged=True,
-                compute_type=codebuild.ComputeType.SMALL,
+                compute_type=codebuild.ComputeType.LARGE,
                 build_image=codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
             ),
             environment_variables={

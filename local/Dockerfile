@@ -18,11 +18,14 @@ RUN apk -v --no-cache --update add \
         aws-cli \
         jq \
         bash \
+        tzdata \
         && \
     rm -rf /var/cache/apk/* && \
     npm install -g "aws-cdk@$AWS_CDK_VERSION" && \
     groupadd -g "$GROUP_ID" "$CDK_USER" && \
     useradd -l -u "$USER_ID" -g "$CDK_USER" "$CDK_USER"
+
+RUN ln -s /usr/share/zoneinfo/Asia/Hong_Kong /etc/localtime
 
 VOLUME [ "/home/${CDK_USER}/.aws" ]
 VOLUME [ "/app" ]
