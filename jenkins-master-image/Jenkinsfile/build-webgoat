@@ -6,6 +6,7 @@ def runProjectBuild(String projectname) {
                 projectName: "${projectname}", 
                 region: "${params.AWS_REGION}", 
                 sourceControlType: 'project',
+                sourceVersion: "${env.BRANCH_NAME}",
                 artifactTypeOverride: 'S3',
                 artifactPackagingOverride: 'ZIP',
                 artifactLocationOverride: "${params.ARTIFACT_S3}",
@@ -53,18 +54,34 @@ pipeline {
     agent any
     parameters {
         string(name: 'BEHAVE_PROJECTNAME', defaultValue: '%BehaveScanningProjectName', description: 'CodeBuild project name')
+        string(name: 'BEHAVE_IMAGE_BUILD_PROJECTNAME', defaultValue: '%BehaveImageBuildProjectName', description: 'CodeBuild project name')
         string(name: 'WEBGOAT_PROJECTNAME', defaultValue: '%WebGoatBuildProjectName', description: 'CodeBuild project name')
         string(name: 'JOERN_PROJECTNAME', defaultValue: '%JoernScanProjectName', description: 'CodeBuild project name')
         string(name: 'ARTIFACT_S3', defaultValue: '%S3ArtifactName', description: 'CodeBuild artifact bucket')
         choice(name: 'AWS_REGION', choices: ['ap-southeast-1'], description: 'AWS region')
     }
+    environment {
+        BRANCH_NAME = sh(script: "echo ${env.GIT_BRANCH} | awk -F'/' '{print \$NF}'", returnStdout: true).trim()
+    }
     stages {
-        stage('Build webgoat jar') {
-            steps {
-                script{
-                    def output = runProjectBuild(params.WEBGOAT_PROJECTNAME)
-                    //sh "aws codebuild batch-get-builds --ids ${output} --output text --query 'builds[].logs.groupName' | xargs -I {} aws logs tail {} --output text"
-                    sh "unzip -o ./${params.WEBGOAT_PROJECTNAME}/${BUILD_ID}/results.zip -d ."
+        stage('Build and Deploy'){
+            parallel{
+                stage('Build webgoat jar') {
+                    steps {
+                        script{
+                            def output = runProjectBuild(params.WEBGOAT_PROJECTNAME)
+                            //sh "aws codebuild batch-get-builds --ids ${output} --output text --query 'builds[].logs.groupName' | xargs -I {} aws logs tail {} --output text"
+                            sh "unzip -o ./${params.WEBGOAT_PROJECTNAME}/${BUILD_ID}/results.zip -d ."
+                        }
+                    }
+                }
+                stage('Behave image build') {
+                    steps {
+                        script{
+                            echo "Build number is ${currentBuild.number}"
+                            def output = runProjectBuild(params.BEHAVE_IMAGE_BUILD_PROJECTNAME)
+                        }
+                    }
                 }
             }
         }
@@ -87,11 +104,6 @@ pipeline {
                     }
                 }
             }
-        }
-    }
-    post { 
-        always { 
-            deleteDir()
         }
     }
 }

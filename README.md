@@ -36,7 +36,8 @@ The project has the following folder layout:
 devsecops-jenkins-scanner
 ├── README.md
 ├── cdk-jenkins - CDK code
-├── gauntlt - BDD scanning configuration file
+├── gauntlt - BDD scanning
+├── behave - BDD scanning 
 ├── jenkins-master-image - Jenkins configuration file
 └── local - local docker development
 ```
@@ -45,47 +46,48 @@ devsecops-jenkins-scanner
 
 Before starting the installation, ensure that the following prerequisites are met:
 
+- AWS account with CLI access (`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`)
 - Linux base platform (Recommend to use [cloud9](https://aws.amazon.com/pm/cloud9/) )
 - Docker installed
-- AWS account with CLI access (`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`)
-- fork https://github.com/yiuc/devsecops-jenkins-scanner to under your manage cause you will require to make change on the repo
+- fork https://github.com/yiuc/devsecops-jenkins-scanner under your manage cause you will require to make change on the repo
 
 ## 4 Provision
 
 Follow the steps below to install and configure the DevSecOps Jenkins scanner.
 
-### 4.1 AWS Resource Creation
+### 4.1 Provision Cloud9 as development terminal
 
 1. Create Environment in Cloud9 thorugh AWS console
 2. Follow the instruction to fill in the require input
     - Name
-    - Instance Type (Recommend t3.small)
+    - Instance Type (Recommend t3.small or more power)
     - Platform - Amazon Linux 2023
     - use AWS System Manager (SSM) for connection
     - VPC can be default VPC
-    - Recommend to add the storage to 30GB
-3. open your cloud9 instance in console and start below configuration
+3. Click on detail and click Manage EC2 Instance to add the storage to 30GB
+4. open your cloud9 instance in console and start below configuration
 
 #### 4.1.1 Manual setup in cloud9
 
-1. Download the source code from the repository: `git clone https://github.com/$YOURID/devsecops-jenkins-scanner`
-2. Set up the environment:
+1. Set up the environment:
     
     ```bash
     export AWS_PAGER=
     export AWS_REGION=ap-southeast-1
     export ACCOUNT=$(aws sts get-caller-identity --out json --query 'Account' | sed 's/"//g')
+    export YOURID=YOURID
     ```
-
-    `sed -i 's/yiuc/YOURID/gp' **/*`
-    
-3. Create a private ECR repository for the "jenkins-master" image:
+2. Fork Github repo, generate ssh access key `ssh-keygen -t rsa`
+3. add your ssh public key into your repo Deploy keys session to get access right.
+4. Download the source code from the repository: `git clone git@github.com:$YOURID/devsecops-jenkins-scanner`
+5. Modify the repo name `find . -type f -exec sed -i "s/yiuc/$YOURID/g" {} +`   
+6. Create a private ECR repository for the "jenkins-master" image:
     
     ```bash
     aws ecr create-repository --repository-name jenkins-master --image-scanning-configuration scanOnPush=false --region $AWS_REGION
     ```
     
-4. Manually build the Jenkins master image and upload it to ECR:
+7. Manually build the Jenkins master image and upload it to ECR:
     
     ```bash
     docker build --platform linux/amd64 -t jenkins-master jenkins-master-image/. ;\
@@ -94,7 +96,7 @@ Follow the steps below to install and configure the DevSecOps Jenkins scanner.
     docker push $ACCOUNT.dkr.ecr.$AWS_REGION.amazonaws.com/jenkins-master:latest ;
     ```
     
-5. List the Jenkins-master image in your ECR repository:
+8. List the Jenkins-master image in your ECR repository:
     
     ```bash
     aws ecr list-images --repository-name jenkins-master --region $AWS_REGION --output table
@@ -116,7 +118,7 @@ Follow the steps below to install and configure the DevSecOps Jenkins scanner:
     
     ``` -->
     
-2. Copy the `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` into the Docker container and set the environment variables:
+2. Copy the `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` into the cloud9 environment and set the environment variables:
     
     `curl ifconfig.io` get your local ipaddress
 
@@ -241,29 +243,37 @@ update createJobs.groovy to your repo
 #### 4.3.1 Build spce
 
 ```yaml
-version: 0.2 
+version: 0.2
 
 phases:
   install:
     commands:
-      # enable docker in docker command
       - nohup /usr/local/bin/dockerd --host=unix:///var/run/docker.sock --host=tcp://127.0.0.1:2375 --storage-driver=overlay2 &
       - timeout 15 sh -c "until docker info; do echo .; sleep 1; done"
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
       - aws --version
-      - pwd && ls -l
+      - pwd && ls -lR
   build:
     commands:
-      # download the image
-      - docker pull ghcr.io/joernio/joern:nightly
-      # find the target source form artifact
-      - export jarfile=$(ls -1 *.jar) && echo $jarfile
-      - docker run --rm -v $(pwd):/app:rw -w /app -t ghcr.io/joernio/joern:nightly joern-scan $jarfile
+      - echo Build started on `date`
+      - echo Running your command in Docker...
+      - docker pull $ECR_URL:latest
+      - |
+        docker run \
+          --rm \
+          -e APP_URL=$APP_URL \
+          -e PYTHONPATH=/app/behave/libs \
+          -v $(pwd):/app \
+          $ECR_URL:latest \
+          behave /app/behave/features | tee output.txt
+      - echo "Command output:"
+      - cat output.txt
   post_build:
     commands:
-      - echo Build completed on $(date)
+      - echo Build completed on `date`
 ```
 
 #### 4.3.2 codebuild in CDK
