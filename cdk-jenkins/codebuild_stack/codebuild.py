@@ -148,7 +148,8 @@ class CodeBuildStack(Stack):
             iam.PolicyStatement(
                 effect=iam.Effect.ALLOW,
                 actions=[
-                    "iam:PassRole"
+                    "iam:PassRole",
+                    "sts:AssumeRole"
                 ],
                 resources=["*"]
             ),
