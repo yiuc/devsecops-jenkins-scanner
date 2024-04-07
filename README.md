@@ -140,9 +140,9 @@ Follow the steps below to install and configure the DevSecOps Jenkins scanner:
 4. Deploy the stack using CDK:
     
     ```bash
-    cdk synth --context-json '{"branch_or_ref": "main"}' --context current_ip=$CURRENT_IP
-    cdk deploy --context-json '{"branch_or_ref": "main"}' --context current_ip=$CURRENT_IP --require-approval never --all
-    #cdk deploy --context-json '{"branch_or_ref": "main"}' --context current_ip=$CURRENT_IP --all #with confirmation
+    cdk synth --context current_ip=$CURRENT_IP
+    cdk deploy --context current_ip=$CURRENT_IP --require-approval never --all
+    #cdk deploy --context branch_or_ref=develop --context current_ip=$CURRENT_IP --all #with confirmation
     ```
 
     |  Stack  |Time   |
