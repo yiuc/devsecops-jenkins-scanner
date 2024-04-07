@@ -149,7 +149,7 @@ class CodeBuildStack(Stack):
                 "codebuild_webgoat_deploy_buildspec.yaml"
             ),
             source=codebuild.Source.s3(
-                bucket=s3_bucket, path="BuildImage74257FD8-G2bjbCQI8qQK/59/results.zip"
+                bucket=s3_bucket, path="BuildImage74257FD8-JVpbhJo0Prh0/4/results.zip"
             ),
             secondary_sources=secondary_sources,
             environment=codebuild.BuildEnvironment(
@@ -195,7 +195,8 @@ class CodeBuildStack(Stack):
                     "ec2:DescribeNetworkInterfaces",
                     "ec2:DescribeSubnets",
                     "ec2:DescribeSecurityGroups",
-                    "ec2:DescribeVpcs"
+                    "ec2:DescribeVpcs",
+                    "ec2:DescribeAvailabilityZones"
                 ],
                 resources=["*"]
             ),

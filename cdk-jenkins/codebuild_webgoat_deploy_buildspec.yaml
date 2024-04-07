@@ -31,8 +31,10 @@ phases:
       - docker push $REPOSITORY_URI:latest
       - echo CDK deploy 
       - cd $CODEBUILD_SRC_DIR_secondary_source_1/cdk-jenkins
+      - |
+        echo {"webgoat_registry": $ECR_NAME} > context.json
       - cdk synth
-      - cdk deploy --context-json {\"webgoat_registry\": $ECR_NAME} --require-approval never WebGoatStack
+      - cdk deploy --context-json file://context.json --require-approval never WebGoatStack
   post_build:
     commands:
       - echo Build completed on $(date)
