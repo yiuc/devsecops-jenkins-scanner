@@ -171,6 +171,8 @@ class CodeBuildStack(Stack):
         )
         webgoat_ecr_repository.grant_pull_push(codebuild_webgoat_deploy)
         # Define the policy statements
+        region = os.getenv("CDK_DEFAULT_REGION") or ""
+        account_id = os.getenv("CDK_DEFAULT_ACCOUNT") or ""
         policy_statements = [
             iam.PolicyStatement(
                 effect=iam.Effect.ALLOW,
