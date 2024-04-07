@@ -7,6 +7,7 @@ from aws_cdk import (
     aws_ec2 as ec2,
     aws_ecr as ecr,
     aws_s3 as s3,
+    aws_iam as iam,
 )
 import aws_cdk as cdk
 import os
@@ -160,13 +161,64 @@ class CodeBuildStack(Stack):
                 "ECR_URL": codebuild.BuildEnvironmentVariable(
                     value=webgoat_ecr_repository.repository_uri
                 ),
+                "ECR_NAME": codebuild.BuildEnvironmentVariable(
+                    value=webgoat_ecr_repository.repository_name
+                ),
                 "AWS_ACCOUNT_ID": codebuild.BuildEnvironmentVariable(
                     value=os.getenv("CDK_DEFAULT_ACCOUNT") or ""
                 ),
             },
         )
         webgoat_ecr_repository.grant_pull_push(codebuild_webgoat_deploy)
-
+        # Define the policy statements
+        policy_statements = [
+            iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                actions=["ec2:CreateNetworkInterface"],
+                resources=[
+                    f"arn:aws:ec2:{region}:{account_id}:network-interface/*",
+                    f"arn:aws:ec2:{region}:{account_id}:subnet/*",
+                    f"arn:aws:ec2:{region}:{account_id}:security-group/*"
+                ]
+            ),
+            iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                actions=["ec2:DeleteNetworkInterface"],
+                resources=[f"arn:aws:ec2:{region}:{account_id}:*/*"]
+            ),
+            iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                actions=[
+                    "ec2:DescribeDhcpOptions",
+                    "ec2:DescribeNetworkInterfaces",
+                    "ec2:DescribeSubnets",
+                    "ec2:DescribeSecurityGroups",
+                    "ec2:DescribeVpcs"
+                ],
+                resources=["*"]
+            ),
+            iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                actions=["ec2:CreateNetworkInterfacePermission"],
+                resources=[f"arn:aws:ec2:{region}:{account_id}:network-interface/*"],
+                conditions={
+                    "StringEquals": {
+                        "ec2:AuthorizedService": "codebuild.amazonaws.com"
+                    }
+                }
+            )
+        ]
+        # Create the policy
+        policy = iam.Policy(
+            self,
+            "CodeBuildPolicy",
+            statements=policy_statements
+        )
+        # Add the policy statements to the policy
+        for statement in policy_statements:
+            policy.add_statements(statement)
+        codebuild_webgoat_deploy.add_to_role_policy(policy) 
+        
         # code build project for execute codebuild_behave_scanning_buildspec.yaml
         codebuild_behave_scanning = codebuild.Project(
             self,
