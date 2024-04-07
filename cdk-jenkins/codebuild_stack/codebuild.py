@@ -137,7 +137,7 @@ class CodeBuildStack(Stack):
 
         secondary_sources = [
             codebuild.Source.git_hub(
-                owner="yiuc", repo="devsecops-jenkins-scanner", branch_or_ref=branch_or_ref
+                owner="yiuc", repo="devsecops-jenkins-scanner", branch_or_ref=branch_or_ref, identifier="secondary-source-1"
             ),
         ]
         # code build project for execute codebuild_behave_image_build_buildspec.yaml
