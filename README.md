@@ -1,31 +1,33 @@
 # DevSecOps Jenkins Scanner
 
-This guide provides step-by-step instructions for setting up a DevSecOps Jenkins scanner using AWS native services and Jenkins. Follow these instructions to automate security scanning in a webgoat application using CDK for infrastructure provisioning and Jenkins DSL for pipeline configuration.
+This guide provides step-by-step instructions for setting up a DevSecOps Jenkins scanner using AWS native services and Jenkins. Follow these instructions to automate security scanning in a WebGoat application using CDK for infrastructure provisioning and Jenkins DSL for pipeline configuration.
 
 ## 1 Objective
 
-Most enterprises start their DevSecOps journey by introducing test automation and security scanners into the CI/CD pipeline. While security scanners can be very useful when used correctly with rule customization, it irequires advanced security and software engineering skills such as the understanding of complex exploits and AST (Abstract Syntax Tree), and it does not cater for testing of security related business logic or application specific corner cases. Furthermore, these tools are generally not flexible enough to cater for management of complicated test cases at scale. As a result, most enterprises face the same challenges right after starting their DevSecOps journey to shift-left security, because simply plugging in scanners and throwing scan results to developers is not shift-left, it's shifting responsibility.
+Software security vulnerabilities have become a major concern for enterprises, and introducing security testing and scanning tools into the CI/CD pipeline is a crucial step in their DevSecOps journey. However, while security scanners can be useful when configured correctly with rule customization, they often require advanced security and software engineering skills, such as understanding complex exploits and Abstract Syntax Trees (AST). Additionally, these tools may not cater to testing security-related business logic or application-specific corner cases, and they may lack the flexibility to manage complicated test cases at scale. As a result, many enterprises face challenges after starting their shift-left security initiatives because simply plugging in scanners and passing scan results to developers does not truly constitute a shift-left approach; it merely shifts responsibility.
 
-BDD (Behavior-Driven Development) approach to security can be a saver to the life of a software engineer in dealing with security problems. Have a look at our sharing in AWS Summit here - "https://hktw-resources.awscloud.com/aws-summit-hong-kong-2023/dealing-with-challenges-of-devsecops-practice-in-enterprises" in which we introduced the concept of BDD security test automation as well as fuzzing practiced for long by big tech and mega FSI. This time, we will guide you through a DIY lab in which you can get your hands dirty and try to build your first security test cases.
+Behavior-Driven Development (BDD) for security can be a lifesaver for software engineers dealing with security problems. Our sharing at the AWS Summit, "Dealing with Challenges of DevSecOps Practice in Enterprises" (https://hktw-resources.awscloud.com/aws-summit-hong-kong-2023/dealing-with-challenges-of-devsecops-practice-in-enterprises), introduced the concept of BDD security test automation and fuzzing techniques long practiced by big tech companies and major financial services institutions. In this guide, we will walk you through a hands-on lab where you can get your hands dirty and build your first security test cases.
 
-The objective of this installation guide is to demonstrate how to use AWS native services and Jenkins to start automation security scanning in a webgoat application. The guide will cover the use of CDK for infrastructure provisioning and Jenkins DSL for pipeline configuration.
+The objective of this installation guide is to demonstrate how to use AWS native services and Jenkins to automate security scanning in a WebGoat application. The guide will cover the use of CDK for infrastructure provisioning and Jenkins DSL for pipeline configuration, providing a practical example of integrating security testing into the CI/CD pipeline.
 
 ## 2 Technical Stack
 
 The following technical stack will be used in this installation:
 
-- [CDK](https://aws.amazon.com/cdk/?nc1=h_ls) - IaC, provides a library of constructs that cover many AWS services and features
-- Jenkins - Jenkins is an open source automation server. It helps automate the parts of software development
+- [CDK](https://aws.amazon.com/cdk/?nc1=h_ls) - Infrastructure as Code (IaC), provides a library of constructs that cover many AWS services and features
+- Jenkins - Jenkins is an open source automation server that helps automate various parts of the software development process
     - [Jenkins Configuration as Code](https://abrahamntd.medium.com/automating-jenkins-setup-using-docker-and-jenkins-configuration-as-code-897e6640af9d)
     - Groovy
-- [Codebuild](https://aws.amazon.com/codebuild/) - Build Server / Jenkins agent
+- [Codebuild](https://aws.amazon.com/codebuild/) - Fully managed build service used as a build server and Jenkins agent
     - [Integrating AWS CodeBuild into Jenkins pipelines](https://jenkinshero.com/integrating-aws-codebuild-into-jenkins-pipelines/)
-- [Joern](https://github.com/joernio/joern) - analyzing source code, bytecode, and binary executables
-- [WebGoat](https://owasp.org/www-project-webgoat/) - insecure application that allows developers to test vulnerabilities commonly
+- [Joern](https://github.com/joernio/joern) - A tool for analyzing source code, bytecode, and binary executables for security vulnerabilities
+- [WebGoat](https://owasp.org/www-project-webgoat/) - An insecure web application designed for developers to test and learn about common web application vulnerabilities
+- [Cognito](https://aws.amazon.com/pm/cognito/?gclid=Cj0KCQjw5cOwBhCiARIsAJ5njuZaZrIy83YnNcdVGENpaxz2SVGRhHFibhSvZdhRbt4JKv0iCS50qeQaApTjEALw_wcB&trk=0436ebd7-f0ca-404b-8936-e4ed264096c4&sc_channel=ps&ef_id=Cj0KCQjw5cOwBhCiARIsAJ5njuZaZrIy83YnNcdVGENpaxz2SVGRhHFibhSvZdhRbt4JKv0iCS50qeQaApTjEALw_wcB:G:s&s_kwcid=AL!4422!3!651541934827!e!!g!!cognito!19828212429!149982290871)
+- [Behave](https://behave.readthedocs.io/en/latest/)
 
 ### 2.1 Overall Architecture
 
-The stack will be provisioned using CDK. Please refer to the provided architecture diagram for an overview.
+The infrastructure stack will be provisioned using CDK. Please refer to the provided architecture diagram for an overview of the overall architecture.
 ![](./docs/image/infra.drawio.png)
 
 ### 2.2 Folder Layout
@@ -46,118 +48,112 @@ devsecops-jenkins-scanner
 
 Before starting the installation, ensure that the following prerequisites are met:
 
-- AWS account with CLI access (`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`)
-- Linux base platform (Recommend to use [cloud9](https://aws.amazon.com/pm/cloud9/) )
+- An AWS account with CLI access (`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`)
+- A Linux-based platform (Recommended: [AWS Cloud9](https://aws.amazon.com/pm/cloud9/))
 - Docker installed
-- fork https://github.com/yiuc/devsecops-jenkins-scanner under your manage cause you will require to make change on the repo
+- Fork the https://github.com/yiuc/devsecops-jenkins-scanner repository under your GitHub account, as you will need to make changes to the repository
 
-## 4 Provision
+## 4 Provision AWS resources
 
 Follow the steps below to install and configure the DevSecOps Jenkins scanner.
 
-### 4.1 Provision Cloud9 as development terminal
+### 4.1 Provision Cloud9 as the Development Terminal
 
-1. Create Environment in Cloud9 thorugh AWS console
-2. Follow the instruction to fill in the require input
+1. Create a new Cloud9 Environment through the AWS console.
+2. Follow the instructions to provide the required inputs:
     - Name
-    - Instance Type (Recommend t3.small or more power)
+    - Instance Type (Recommended: t3.small or more powerful)
     - Platform - Amazon Linux 2023
-    - use AWS System Manager (SSM) for connection
-    - VPC can be default VPC
-3. Click on detail and click Manage EC2 Instance to add the storage to 30GB
-4. open your cloud9 instance in console and start below configuration
+    - Use AWS Systems Manager (SSM) for connection
+    - VPC can be the default VPC
+3. Click on "Details" and "Manage EC2 Instance" to increase the storage to 30GB.
+4. Open your Cloud9 instance in the console and start the configuration below.
 
-#### 4.1.1 Manual setup in cloud9
+#### 4.1.1 Manual Setup in Cloud9
 
 1. Set up the environment:
-    
+
     ```bash
-    export AWS_PAGER=
-    export AWS_REGION=ap-southeast-1
-    export ACCOUNT=$(aws sts get-caller-identity --out json --query 'Account' | sed 's/"//g')
-    export YOURID=YOURID
+    export AWS_PAGER= ;\
+    export AWS_REGION=ap-southeast-1 ;\
+    export ACCOUNT=$(aws sts get-caller-identity --out json --query 'Account' | sed 's/"//g') ;\
+    export YOURID=YOUR GITHUB ID
     ```
-2. Fork Github repo, generate ssh access key `ssh-keygen -t rsa`
-3. add your ssh public key into your repo Deploy keys session to get access right.
-4. Download the source code from the repository: `git clone git@github.com:$YOURID/devsecops-jenkins-scanner`
-5. Modify the repo name `find . -type f -exec sed -i "s/yiuc/$YOURID/g" {} +`   
-6. Create a private ECR repository for the "jenkins-master" image:
-    
+
+2. Fork the GitHub repository, generate an SSH access key (`ssh-keygen -t rsa`), and add your SSH public key to the repository's "Deploy Keys" section to grant access rights.
+3. Download the source code from your forked repository: `git clone git@github.com:$YOURID/devsecops-jenkins-scanner`
+4. Modify the repository name: `find . -type f -exec sed -i "s/yiuc/$YOURID/g" {} +`
+5. Create a private ECR repository for the "jenkins-master" image:
+
     ```bash
     aws ecr create-repository --repository-name jenkins-master --image-scanning-configuration scanOnPush=false --region $AWS_REGION
     ```
-    
-7. Manually build the Jenkins master image and upload it to ECR:
-    
+
+6. Manually build the Jenkins master image and upload it to ECR:
+
     ```bash
-    docker build --platform linux/amd64 -t jenkins-master jenkins-master-image/. ;\
     aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ACCOUNT.dkr.ecr.$AWS_REGION.amazonaws.com ; \
     docker tag jenkins-master:latest $ACCOUNT.dkr.ecr.$AWS_REGION.amazonaws.com/jenkins-master:latest ; \
     docker push $ACCOUNT.dkr.ecr.$AWS_REGION.amazonaws.com/jenkins-master:latest ;
     ```
-    
-8. List the Jenkins-master image in your ECR repository:
-    
+
+7. List the Jenkins-master image in your ECR repository:
+
     ```bash
     aws ecr list-images --repository-name jenkins-master --region $AWS_REGION --output table
-    
     ```
-    
-#### 4.1.2 Provision AWS resources
+
+#### 4.1.2 Provision AWS Resources
 
 Follow the steps below to install and configure the DevSecOps Jenkins scanner:
 
-<!-- 1. Build the local Docker image and access the base environment:
-    
-    ```bash
-    docker build -t my-aws-cli-image ./local
-    docker run -v $(pwd):/app --rm -it my-aws-cli-image:latest bash
+1. Copy the `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` into the Cloud9 environment and set the environment variables:
 
-    for window
-    docker run -v %cd%:/app --rm -it my-aws-cli-image:latest bash
-    
-    ``` -->
-    
-2. Copy the `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` into the cloud9 environment and set the environment variables:
-    
-    `curl ifconfig.io` get your local ipaddress
+    `curl ifconfig.io` get your local IP address
 
     ```bash
-    export AWS_PAGER=
-    export AWS_REGION=ap-southeast-1
-    export ACCOUNT=$(aws sts get-caller-identity --out json --query 'Account' | sed 's/"//g')
-    export CDK_DEFAULT_ACCOUNT=$ACCOUNT
-    export CDK_DEFAULT_REGION=$AWS_REGION
-    export CURRENT_IP=$YOURIP
-    
-    echo -e "$ACCOUNT \\n$CURRENT_IP"
-    
+    export AWS_PAGER= ;\
+    export AWS_REGION=ap-southeast-1 ;\
+    export ACCOUNT=$(aws sts get-caller-identity --out json --query 'Account' | sed 's/"//g') ;\
+    export CDK_DEFAULT_ACCOUNT=$ACCOUNT ;\
+    export CDK_DEFAULT_REGION=$AWS_REGION ;\
+    export CURRENT_IP=$YOURIP ;\
+    echo -e "$ACCOUNT \\n$CURRENT_IP" ;
     ```
     
-3. Initialize the CDK Toolkit:
+2. Initialize the CDK Toolkit:
     
+    install the package 
+
+    `pip install aws-cdk-lib constructs`
+
     ```bash
-    pip install aws-cdk-lib
-    pip install constructs
     cd cdk-jenkins
     cdk bootstrap aws://$ACCOUNT/$AWS_REGION
-    
     ```
 
-4. Use cloudformation list command to check the `CDKToolkit` exist
+3. Use cloudformation list command to check the `CDKToolkit` exist
 
     `aws cloudformation list-stacks --stack-status-filter CREATE_COMPLETE --query "StackSummaries[].[StackName,StackStatus]" --output table`
-    
-5. Deploy the stack using CDK:
+
+
+4. Deploy the stack using CDK:
     
     ```bash
     cdk synth --context-json '{"branch_or_ref": "main"}' --context current_ip=$CURRENT_IP
     cdk deploy --context-json '{"branch_or_ref": "main"}' --context current_ip=$CURRENT_IP --require-approval never --all
     #cdk deploy --context-json '{"branch_or_ref": "main"}' --context current_ip=$CURRENT_IP --all #with confirmation
-    
     ```
 
-6. Capture the `JenkinsMasterStack.LoadBalancerDNSName` output to access the Jenkins Master server
+    |  Stack  |Time   |
+    |----|---|
+    | Network stack |157s   |
+    | Jenkins Master Stack   | 317s  |
+    | WebGoat Stack   | 191s   |
+    | CodeBuild Stack | 71s |
+
+
+5. Capture the `JenkinsMasterStack.LoadBalancerDNSName` output to access the Jenkins Master server
 
 
 ### 4.2 Jenkins Master
@@ -175,8 +171,6 @@ jenkins-master-image
 ├── plugins.txt - the plugin will be installed in Jenkins Master
 └── seedJob.xml - Basic setup and create the seedjob
 ```
-update the codebuild
-update createJobs.groovy to your repo
 
 #### 4.2.2 Jenkins in CDK
 
@@ -219,7 +213,7 @@ update createJobs.groovy to your repo
         )
 ```
 
-#### 4.2.3 Jenkins pipleine overview
+## 5 Jenkins pipleine overview
 
 ![](./docs/image/pipeline_flow.drawio.png)
 
@@ -238,9 +232,9 @@ update createJobs.groovy to your repo
 
 ![](./docs/image/jenkins_paramater.png)
 
-### 4.3 CodeBuild Deep dive
+### 5.1 CodeBuild Deep dive
 
-#### 4.3.1 Build spce
+#### 5.1.1 Build spce
 
 ```yaml
 version: 0.2
@@ -276,7 +270,7 @@ phases:
       - echo Build completed on `date`
 ```
 
-#### 4.3.2 codebuild in CDK
+#### 5.1.2 codebuild in CDK
 
 ```py
         # code build project for execute joern
@@ -303,11 +297,44 @@ phases:
         )
 ```
 
+### 5.2 Behave Tese Case 
+
+```
+Feature: Evaluate response header for a specific endpoint.
+
+  Background: Set endpoint and base URL
+    Given I am using the endpoint "$APP_URL"
+    And I set base URL to "/"
+
+  @runner.continue_after_failed_step
+  Scenario: Check response headers
+    Given a set of specific headers:
+      | key                       | value                    |
+      | Strict-Transport-Security | max-age=31536000; includeSubDomains |
+      | Strict-Transport-Security | max-age=31536000; includeSubDomains; preload |
+      | Content-Security-Policy   | default-src 'self'; script-src 'self'; object-src 'none'; style-src 'self'; base-uri 'none'; frame-ancestors 'none' |
+      | X-Content-Type-Options    | nosniff |
+      | X-Frame-Options           | SAMEORIGIN |
+      | X-Frame-Options           | DENY |
+      | Cache-Control             | no-cache |
+
+    When I make a GET request to "WebGoat"
+    Then the value of header "Cache-Control" should contain the defined value in the given set
+    #And the the value of header "Strict-Transport-Security" should be in the given set
+    #And the value of header "Content-Security-Policy" should be in the given set
+    #And the value of header "X-Content-Type-Options" should be in the given set
+    #And the value of header "X-Frame-Options" should be in the given set
+```
+
+#### 5.2.1 OTP demo using Behave
+
+
 ### Challenge
 
-1. Update your codebuild name in groovy and reflect in Jenkins Master
-2. Speed up the deployment time 
-2. Collect the codebuld log and show in Jenkins
+1. Update your CodeBuild name in the Groovy script and reflect the changes in the Jenkins Master.
+    - update the codebuild
+    - update createJobs.groovy to your repo
+2. Collect the CodeBuild logs and display them in Jenkins.
 
 ## Clean up Action
 
@@ -330,3 +357,4 @@ To perform a clean action, follow these steps:
 - [Integrating AWS CodeBuild into Jenkins pipelines](https://jenkinshero.com/integrating-aws-codebuild-into-jenkins-pipelines/)
 - [Environments - AWS Cloud Development Kit (AWS CDK) v2](https://docs.aws.amazon.com/cdk/v2/guide/environments.html)
 - [AWS CDK Toolkit (cdk command) - AWS Cloud Development Kit (AWS CDK) v2](https://docs.aws.amazon.com/cdk/v2/guide/cli.html#cli-config)
+
