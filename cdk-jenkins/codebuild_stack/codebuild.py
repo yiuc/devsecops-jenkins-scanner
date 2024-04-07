@@ -219,7 +219,7 @@ class CodeBuildStack(Stack):
         # Add the policy statements to the policy
         for statement in policy_statements:
             policy.add_statements(statement)
-        codebuild_webgoat_deploy.add_to_role_policy(policy) 
+        codebuild_webgoat_deploy.role.attach_inline_policy(policy)
         
         # code build project for execute codebuild_behave_scanning_buildspec.yaml
         codebuild_behave_scanning = codebuild.Project(
