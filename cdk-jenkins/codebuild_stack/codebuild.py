@@ -109,7 +109,7 @@ class CodeBuildStack(Stack):
         )
         joern_ecr_repository.grant_pull(codebuild_joern)
 
-        branch_or_ref=self.node.try_get_context("branch_or_ref") or "develop"
+        branch_or_ref=self.node.try_get_context("branch_or_ref") or "main"
         # code build project for execute codebuild_behave_image_build_buildspec.yaml
         codebuild_behave_image_build = codebuild.Project(
             self,
