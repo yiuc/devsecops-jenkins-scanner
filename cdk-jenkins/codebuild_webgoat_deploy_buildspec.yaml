@@ -1,0 +1,38 @@
+version: 0.2
+
+env:
+  shell: bash
+
+phases:
+  install:
+    commands:
+    - nohup /usr/local/bin/dockerd --host=unix:///var/run/docker.sock --host=tcp://127.0.0.1:2375 --storage-driver=overlay2&
+    - timeout 15 sh -c "until docker info; do echo .; sleep 1; done"
+    - npm install aws-cdk@2.96.1 -g
+    - pip install constructs
+    - pip install aws-cdk-lib
+  pre_build:
+    commands:
+    - pwd && ls -l
+    - cdk --version
+    - echo Logging in to Amazon ECR.... 
+    - aws --version
+    # update the following line with your own region
+    - aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+  build:
+    commands:
+    - echo Build started on $(date)
+    - echo Building the Docker image...
+    - wget https://raw.githubusercontent.com/WebGoat/WebGoat/main/Dockerfile
+    - REPOSITORY_URI=${ECR_URL}
+    - docker build -t $REPOSITORY_URI:latest .
+    - echo Build completed on `date` 
+    - echo pushing to repo
+    - docker push $REPOSITORY_URI:latest
+    - echo CDK deploy 
+    - cd $(pwd)/cdk-jenkins
+    - cdk synth
+    - cdk deploy --require-approval never WebGoatStack
+  post_build:
+    commands:
+      - echo Build completed on $(date)

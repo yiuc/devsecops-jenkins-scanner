@@ -38,6 +38,14 @@ class CodeBuildStack(Stack):
             removal_policy=cdk.RemovalPolicy.DESTROY,
         )
 
+        webgoat_ecr_repository = ecr.Repository(
+            self,
+            "webgoat-image",
+            image_scan_on_push=True,
+            image_tag_mutability=ecr.TagMutability.MUTABLE,
+            removal_policy=cdk.RemovalPolicy.DESTROY,
+        )
+
         # create s3 bucket the name is jeknins-build-artifacts
         s3_bucket = s3.Bucket(
             self,
@@ -51,13 +59,14 @@ class CodeBuildStack(Stack):
         )
 
         # CodeBuild project that builds the webgoat jar
+        source_owner=self.node.try_get_context("webgoat_owner") or "WebGoat"
         codebuild_jar = codebuild.Project(
             self,
             "BuildImage",
             build_spec=codebuild.BuildSpec.from_asset(
                 "codebuild_webgoat_buildspec.yaml"
             ),
-            source=codebuild.Source.git_hub(owner="WebGoat", repo="WebGoat"),
+            source=codebuild.Source.git_hub(owner=source_owner, repo="WebGoat"),
             # artifacts=codebuild.Artifacts.s3(bucket=s3_bucket,package_zip=True,encryption=False),
             artifacts=codebuild.Artifacts.s3(bucket=s3_bucket, encryption=False),
             environment=codebuild.BuildEnvironment(
@@ -99,6 +108,7 @@ class CodeBuildStack(Stack):
         )
         joern_ecr_repository.grant_pull(codebuild_joern)
 
+        branch_or_ref=self.node.try_get_context("branch_or_ref") or "main"
         # code build project for execute codebuild_behave_image_build_buildspec.yaml
         codebuild_behave_image_build = codebuild.Project(
             self,
@@ -107,7 +117,7 @@ class CodeBuildStack(Stack):
                 "codebuild_behave_image_build_buildspec.yaml"
             ),
             source=codebuild.Source.git_hub(
-                owner="yiuc", repo="devsecops-jenkins-scanner", branch_or_ref="develop"
+                owner="yiuc", repo="devsecops-jenkins-scanner", branch_or_ref=branch_or_ref
             ),
             environment=codebuild.BuildEnvironment(
                 build_image=codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
@@ -125,6 +135,36 @@ class CodeBuildStack(Stack):
         )
         behave_ecr_repository.grant_pull_push(codebuild_behave_image_build)
 
+        # code build project for execute codebuild_behave_image_build_buildspec.yaml
+        codebuild_webgoat_deploy = codebuild.Project(
+            self,
+            "WebgoatDeploy",
+            build_spec=codebuild.BuildSpec.from_asset(
+                "codebuild_webgoat_deploy_buildspec.yaml"
+            ),
+            # source from s3 and github
+            source=codebuild.Source.git_hub(
+                owner="yiuc", repo="devsecops-jenkins-scanner", branch_or_ref=branch_or_ref
+            ),
+            secondary_sources=codebuild.Source.s3(
+                bucket=s3_bucket, path="BuildImage74257FD8-G2bjbCQI8qQK/59/results.zip"
+            ), 
+            environment=codebuild.BuildEnvironment(
+                build_image=codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
+                compute_type=codebuild.ComputeType.MEDIUM,
+                privileged=True,
+            ),
+            environment_variables={
+                "ECR_URL": codebuild.BuildEnvironmentVariable(
+                    value=webgoat_ecr_repository.repository_uri
+                ),
+                "AWS_ACCOUNT_ID": codebuild.BuildEnvironmentVariable(
+                    value=os.getenv("CDK_DEFAULT_ACCOUNT") or ""
+                ),
+            },
+        )
+        behave_ecr_repository.grant_pull_push(codebuild_behave_image_build)
+
         # code build project for execute codebuild_behave_scanning_buildspec.yaml
         codebuild_behave_scanning = codebuild.Project(
             self,
@@ -133,7 +173,7 @@ class CodeBuildStack(Stack):
                 "codebuild_behave_scanning_buildspec.yaml"
             ),
             source=codebuild.Source.git_hub(
-                owner="yiuc", repo="devsecops-jenkins-scanner", branch_or_ref="develop"
+                owner="yiuc", repo="devsecops-jenkins-scanner", branch_or_ref=branch_or_ref
             ),
             environment=codebuild.BuildEnvironment(
                 build_image=codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
