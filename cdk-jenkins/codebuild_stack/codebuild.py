@@ -142,6 +142,18 @@ class CodeBuildStack(Stack):
             ),
         ]
         # code build project for execute codebuild_behave_image_build_buildspec.yaml
+        # Create the IAM role for CodeBuild
+        codebuild_role = iam.Role(
+            self,
+            "CodeBuildRole",
+            assumed_by=iam.ServicePrincipal("codebuild.amazonaws.com"),
+            managed_policies=[
+                iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSCodeBuildAdminRole"),
+                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonECS_FullAccess"),
+                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonEC2ContainerRegistryFullAccess"),
+                # Add any other necessary managed policies or inline policies
+            ],
+        )
         codebuild_webgoat_deploy = codebuild.Project(
             self,
             "WebgoatDeploy",
@@ -151,6 +163,7 @@ class CodeBuildStack(Stack):
             source=codebuild.Source.s3(
                 bucket=s3_bucket, path="BuildImage74257FD8-JVpbhJo0Prh0/4/results.zip"
             ),
+            role=codebuild_role,
             secondary_sources=secondary_sources,
             environment=codebuild.BuildEnvironment(
                 build_image=codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
@@ -170,57 +183,6 @@ class CodeBuildStack(Stack):
             },
         )
         webgoat_ecr_repository.grant_pull_push(codebuild_webgoat_deploy)
-        # Define the policy statements
-        region = os.getenv("CDK_DEFAULT_REGION") or ""
-        account_id = os.getenv("CDK_DEFAULT_ACCOUNT") or ""
-        policy_statements = [
-            iam.PolicyStatement(
-                effect=iam.Effect.ALLOW,
-                actions=["ec2:CreateNetworkInterface"],
-                resources=[
-                    f"arn:aws:ec2:{region}:{account_id}:network-interface/*",
-                    f"arn:aws:ec2:{region}:{account_id}:subnet/*",
-                    f"arn:aws:ec2:{region}:{account_id}:security-group/*"
-                ]
-            ),
-            iam.PolicyStatement(
-                effect=iam.Effect.ALLOW,
-                actions=["ec2:DeleteNetworkInterface"],
-                resources=[f"arn:aws:ec2:{region}:{account_id}:*/*"]
-            ),
-            iam.PolicyStatement(
-                effect=iam.Effect.ALLOW,
-                actions=[
-                    "ec2:DescribeDhcpOptions",
-                    "ec2:DescribeNetworkInterfaces",
-                    "ec2:DescribeSubnets",
-                    "ec2:DescribeSecurityGroups",
-                    "ec2:DescribeVpcs",
-                    "ec2:DescribeAvailabilityZones"
-                ],
-                resources=["*"]
-            ),
-            iam.PolicyStatement(
-                effect=iam.Effect.ALLOW,
-                actions=["ec2:CreateNetworkInterfacePermission"],
-                resources=[f"arn:aws:ec2:{region}:{account_id}:network-interface/*"],
-                conditions={
-                    "StringEquals": {
-                        "ec2:AuthorizedService": "codebuild.amazonaws.com"
-                    }
-                }
-            )
-        ]
-        # Create the policy
-        policy = iam.Policy(
-            self,
-            "CodeBuildPolicy",
-            statements=policy_statements
-        )
-        # Add the policy statements to the policy
-        for statement in policy_statements:
-            policy.add_statements(statement)
-        codebuild_webgoat_deploy.role.attach_inline_policy(policy)
         
         # code build project for execute codebuild_behave_scanning_buildspec.yaml
         codebuild_behave_scanning = codebuild.Project(
