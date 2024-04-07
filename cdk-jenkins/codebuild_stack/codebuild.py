@@ -109,7 +109,7 @@ class CodeBuildStack(Stack):
         )
         joern_ecr_repository.grant_pull(codebuild_joern)
 
-        branch_or_ref=self.node.try_get_context("branch_or_ref") or "main"
+        branch_or_ref=self.node.try_get_context("branch_or_ref") or "develop"
         # code build project for execute codebuild_behave_image_build_buildspec.yaml
         codebuild_behave_image_build = codebuild.Project(
             self,
@@ -149,6 +149,7 @@ class CodeBuildStack(Stack):
             assumed_by=iam.ServicePrincipal("codebuild.amazonaws.com"),
             managed_policies=[
                 iam.ManagedPolicy.from_aws_managed_policy_name("AWSCodeBuildAdminAccess"),
+                iam.ManagedPolicy.from_aws_managed_policy_name("AWSCloudFormationFullAccess"),
                 iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSSMFullAccess"),
                 iam.ManagedPolicy.from_aws_managed_policy_name("AmazonECS_FullAccess"),
                 iam.ManagedPolicy.from_aws_managed_policy_name("AmazonEC2ContainerRegistryFullAccess"),

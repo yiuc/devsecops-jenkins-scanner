@@ -33,6 +33,7 @@ phases:
       - cd $CODEBUILD_SRC_DIR_secondary_source_1/cdk-jenkins
       - |
         echo {"webgoat_registry": $ECR_NAME} > context.json
+      - cat context.json
       - cdk synth
       - cdk deploy --context-json file://context.json --require-approval never WebGoatStack
   post_build:
