@@ -135,6 +135,11 @@ class CodeBuildStack(Stack):
         )
         behave_ecr_repository.grant_pull_push(codebuild_behave_image_build)
 
+        secondary_sources = [
+            codebuild.Source.git_hub(
+                owner="yiuc", repo="devsecops-jenkins-scanner", branch_or_ref=branch_or_ref
+            ),
+        ]
         # code build project for execute codebuild_behave_image_build_buildspec.yaml
         codebuild_webgoat_deploy = codebuild.Project(
             self,
@@ -142,13 +147,10 @@ class CodeBuildStack(Stack):
             build_spec=codebuild.BuildSpec.from_asset(
                 "codebuild_webgoat_deploy_buildspec.yaml"
             ),
-            # source from s3 and github
-            source=codebuild.Source.git_hub(
-                owner="yiuc", repo="devsecops-jenkins-scanner", branch_or_ref=branch_or_ref
-            ),
-            secondary_sources=codebuild.Source.s3(
+            source=codebuild.Source.s3(
                 bucket=s3_bucket, path="BuildImage74257FD8-G2bjbCQI8qQK/59/results.zip"
-            ), 
+            ),
+            secondary_sources=secondary_sources,
             environment=codebuild.BuildEnvironment(
                 build_image=codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
                 compute_type=codebuild.ComputeType.MEDIUM,
@@ -163,7 +165,7 @@ class CodeBuildStack(Stack):
                 ),
             },
         )
-        behave_ecr_repository.grant_pull_push(codebuild_behave_image_build)
+        webgoat_ecr_repository.grant_pull_push(codebuild_webgoat_deploy)
 
         # code build project for execute codebuild_behave_scanning_buildspec.yaml
         codebuild_behave_scanning = codebuild.Project(
