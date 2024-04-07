@@ -143,7 +143,7 @@ class CodeBuildStack(Stack):
         ]
         # code build project for execute codebuild_behave_image_build_buildspec.yaml
         # Create the IAM role for CodeBuild
-# Define the policy statements
+        # Define the policy statements
         policy_statements = [
             iam.PolicyStatement(
                 effect=iam.Effect.ALLOW,
@@ -169,11 +169,9 @@ class CodeBuildStack(Stack):
                 iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSSMFullAccess"),
                 iam.ManagedPolicy.from_aws_managed_policy_name("AmazonECS_FullAccess"),
                 iam.ManagedPolicy.from_aws_managed_policy_name("AmazonEC2ContainerRegistryFullAccess"),
-            ],
-            inline_policies={
-                "CodeBuildPolicy": policy
-            }
+            ]
         )
+        iam.Policy.attach_to_role(policy, role=codebuild_role)
         codebuild_webgoat_deploy = codebuild.Project(
             self,
             "WebgoatDeploy",
