@@ -1,8 +1,32 @@
-# DevSecOps Jenkins Scanner
+# 1. DevSecOps Jenkins Scanner
 
 This guide provides step-by-step instructions for setting up a DevSecOps Jenkins scanner using AWS native services and Jenkins. Follow these instructions to automate security scanning in a WebGoat application using CDK for infrastructure provisioning and Jenkins DSL for pipeline configuration.
 
-## 1 Objective
+- [1. DevSecOps Jenkins Scanner](#1-devsecops-jenkins-scanner)
+- [2. Objective](#2-objective)
+- [3. Technical Stack](#3-technical-stack)
+  - [3.1. Overall Architecture](#31-overall-architecture)
+  - [3.2. Folder Layout](#32-folder-layout)
+- [4. Prerequisites](#4-prerequisites)
+- [5. Provision AWS resources](#5-provision-aws-resources)
+  - [5.1. Provision Cloud9 as the Development Terminal](#51-provision-cloud9-as-the-development-terminal)
+    - [5.1.1. Manual Setup in Cloud9](#511-manual-setup-in-cloud9)
+    - [5.1.2. Provision AWS Resources](#512-provision-aws-resources)
+  - [5.2. Jenkins Master](#52-jenkins-master)
+    - [5.2.1. Folder Layout](#521-folder-layout)
+    - [5.2.2. Jenkins in CDK](#522-jenkins-in-cdk)
+- [6. Jenkins pipleine overview](#6-jenkins-pipleine-overview)
+  - [6.1. CodeBuild Deep dive](#61-codebuild-deep-dive)
+    - [6.1.1. Build spce](#611-build-spce)
+    - [6.1.2. codebuild in CDK](#612-codebuild-in-cdk)
+  - [6.2. Behave Tese Case](#62-behave-tese-case)
+    - [6.2.1. OTP demo using Behave](#621-otp-demo-using-behave)
+- [7. Challenge](#7-challenge)
+- [8. Clean up Action](#8-clean-up-action)
+- [9. Reference](#9-reference)
+
+
+# 2. Objective
 
 Software security vulnerabilities have become a major concern for enterprises, and introducing security testing and scanning tools into the CI/CD pipeline is a crucial step in their DevSecOps journey. However, while security scanners can be useful when configured correctly with rule customization, they often require advanced security and software engineering skills, such as understanding complex exploits and Abstract Syntax Trees (AST). Additionally, these tools may not cater to testing security-related business logic or application-specific corner cases, and they may lack the flexibility to manage complicated test cases at scale. As a result, many enterprises face challenges after starting their shift-left security initiatives because simply plugging in scanners and passing scan results to developers does not truly constitute a shift-left approach; it merely shifts responsibility.
 
@@ -10,7 +34,7 @@ Behavior-Driven Development (BDD) for security can be a lifesaver for software e
 
 The objective of this installation guide is to demonstrate how to use AWS native services and Jenkins to automate security scanning in a WebGoat application. The guide will cover the use of CDK for infrastructure provisioning and Jenkins DSL for pipeline configuration, providing a practical example of integrating security testing into the CI/CD pipeline.
 
-## 2 Technical Stack
+# 3. Technical Stack
 
 The following technical stack will be used in this installation:
 
@@ -25,12 +49,12 @@ The following technical stack will be used in this installation:
 - [Cognito](https://aws.amazon.com/pm/cognito/?gclid=Cj0KCQjw5cOwBhCiARIsAJ5njuZaZrIy83YnNcdVGENpaxz2SVGRhHFibhSvZdhRbt4JKv0iCS50qeQaApTjEALw_wcB&trk=0436ebd7-f0ca-404b-8936-e4ed264096c4&sc_channel=ps&ef_id=Cj0KCQjw5cOwBhCiARIsAJ5njuZaZrIy83YnNcdVGENpaxz2SVGRhHFibhSvZdhRbt4JKv0iCS50qeQaApTjEALw_wcB:G:s&s_kwcid=AL!4422!3!651541934827!e!!g!!cognito!19828212429!149982290871)
 - [Behave](https://behave.readthedocs.io/en/latest/)
 
-### 2.1 Overall Architecture
+## 3.1. Overall Architecture
 
 The infrastructure stack will be provisioned using CDK. Please refer to the provided architecture diagram for an overview of the overall architecture.
 ![](./docs/image/infra.drawio.png)
 
-### 2.2 Folder Layout
+## 3.2. Folder Layout
 
 The project has the following folder layout:
 
@@ -44,7 +68,7 @@ devsecops-jenkins-scanner
 └── local - local docker development
 ```
 
-## 3 Prerequisites
+# 4. Prerequisites
 
 Before starting the installation, ensure that the following prerequisites are met:
 
@@ -53,11 +77,11 @@ Before starting the installation, ensure that the following prerequisites are me
 - Docker installed
 - Fork the https://github.com/yiuc/devsecops-jenkins-scanner repository under your GitHub account, as you will need to make changes to the repository
 
-## 4 Provision AWS resources
+# 5. Provision AWS resources
 
 Follow the steps below to install and configure the DevSecOps Jenkins scanner.
 
-### 4.1 Provision Cloud9 as the Development Terminal
+## 5.1. Provision Cloud9 as the Development Terminal
 
 1. Create a new Cloud9 Environment through the AWS console.
 2. Follow the instructions to provide the required inputs:
@@ -69,7 +93,7 @@ Follow the steps below to install and configure the DevSecOps Jenkins scanner.
 3. Click on "Details" and "Manage EC2 Instance" to increase the storage to 30GB.
 4. Open your Cloud9 instance in the console and start the configuration below.
 
-#### 4.1.1 Manual Setup in Cloud9
+### 5.1.1. Manual Setup in Cloud9
 
 1. Set up the environment:
 
@@ -103,7 +127,7 @@ Follow the steps below to install and configure the DevSecOps Jenkins scanner.
     aws ecr list-images --repository-name jenkins-master --region $AWS_REGION --output table
     ```
 
-#### 4.1.2 Provision AWS Resources
+### 5.1.2. Provision AWS Resources
 
 Follow the steps below to install and configure the DevSecOps Jenkins scanner:
 
@@ -156,9 +180,9 @@ Follow the steps below to install and configure the DevSecOps Jenkins scanner:
 5. Capture the `JenkinsMasterStack.LoadBalancerDNSName` output to access the Jenkins Master server
 
 
-### 4.2 Jenkins Master
+## 5.2. Jenkins Master
 
-#### 4.2.1 Folder Layout
+### 5.2.1. Folder Layout
 
 ```
 jenkins-master-image
@@ -172,7 +196,7 @@ jenkins-master-image
 └── seedJob.xml - Basic setup and create the seedjob
 ```
 
-#### 4.2.2 Jenkins in CDK
+### 5.2.2. Jenkins in CDK
 
 This code sets up the following resources:
 
@@ -222,15 +246,16 @@ This code sets up the following resources:
         )
 ```
 
-## 5 Jenkins pipleine overview
-
-![](./docs/image/pipeline_flow.drawio.png)
+# 6. Jenkins pipleine overview
 
 1. access the Jenkins using NLB dns name
 
 ![](./docs/image/jenkins_main_page.png)
 
 2. Execute the seed-job to provision the pipeline in Jenkins.
+
+![](./docs/image/pipeline_flow.drawio.png)
+
 3. Execute `AWS_CodeBuild_webgoat` pipeline
 
 ![](./docs/image/jenkins_execution_error.png)
@@ -241,9 +266,9 @@ This code sets up the following resources:
 
 ![](./docs/image/jenkins_paramater.png)
 
-### 5.1 CodeBuild Deep dive
+## 6.1. CodeBuild Deep dive
 
-#### 5.1.1 Build spce
+### 6.1.1. Build spce
 
 This BuildSpec file sets up the Docker environment, authenticates with ECR, pulls a Docker image from ECR, runs behave command inside the Docker container , and captures the output of that command. It is commonly used for building and testing containerized applications within the AWS CodeBuild service.
 
@@ -281,54 +306,22 @@ phases:
       - echo Build completed on `date`
 ```
 
-#### 5.1.2 codebuild in CDK
+### 6.1.2. codebuild in CDK
 
-This code creates an IAM role with necessary permissions for CodeBuild, CloudFormation, Systems Manager, ECS, and ECR. It then creates a CodeBuild project named "WebgoatDeploy" with a build specification file codebuild_webgoat_deploy_buildspec.yaml. The project sources are retrieved from an S3 bucket, and the build environment is configured for Amazon Linux 2.5 with a medium compute type and privileged mode. The project is granted permissions to pull and push images to the WebGoat ECR repository, and environment variables are set for the ECR repository URI, name, and AWS account ID.
+This code sets up a CodeBuild project named BehaveImageBuild that builds a Docker image from the source code in the specified GitHub repository. The built image is then pushed to an ECR repository specified by the ECR_URL environment variable. The build specification file and the branch or Git reference to use are specified as inputs to the CodeBuild project.
 
 ```py
+        branch_or_ref=self.node.try_get_context("branch_or_ref") or "main"
         # code build project for execute codebuild_behave_image_build_buildspec.yaml
-        # Create the IAM role for CodeBuild
-        # Define the policy statements
-        policy_statements = [
-            iam.PolicyStatement(
-                effect=iam.Effect.ALLOW,
-                actions=[
-                    "iam:PassRole",
-                    "sts:AssumeRole"
-                ],
-                resources=["*"]
-            ),
-        ]
-        # Create the policy
-        policy = iam.Policy(
+        codebuild_behave_image_build = codebuild.Project(
             self,
-            "CodeBuildPolicy",
-            statements=policy_statements
-        )
-        codebuild_role = iam.Role(
-            self,
-            "CodeBuildRole",
-            assumed_by=iam.ServicePrincipal("codebuild.amazonaws.com"),
-            managed_policies=[
-                iam.ManagedPolicy.from_aws_managed_policy_name("AWSCodeBuildAdminAccess"),
-                iam.ManagedPolicy.from_aws_managed_policy_name("AWSCloudFormationFullAccess"),
-                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSSMFullAccess"),
-                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonECS_FullAccess"),
-                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonEC2ContainerRegistryFullAccess"),
-            ]
-        )
-        iam.Policy.attach_to_role(policy, role=codebuild_role)
-        codebuild_webgoat_deploy = codebuild.Project(
-            self,
-            "WebgoatDeploy",
+            "BehaveImageBuild",
             build_spec=codebuild.BuildSpec.from_asset(
-                "codebuild_webgoat_deploy_buildspec.yaml"
+                "codebuild_behave_image_build_buildspec.yaml"
             ),
-            source=codebuild.Source.s3(
-                bucket=s3_bucket, path="BuildImage74257FD8-JVpbhJo0Prh0/4/results.zip"
+            source=codebuild.Source.git_hub(
+                owner="yiuc", repo="devsecops-jenkins-scanner", branch_or_ref=branch_or_ref
             ),
-            role=codebuild_role,
-            secondary_sources=secondary_sources,
             environment=codebuild.BuildEnvironment(
                 build_image=codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
                 compute_type=codebuild.ComputeType.MEDIUM,
@@ -336,20 +329,17 @@ This code creates an IAM role with necessary permissions for CodeBuild, CloudFor
             ),
             environment_variables={
                 "ECR_URL": codebuild.BuildEnvironmentVariable(
-                    value=webgoat_ecr_repository.repository_uri
-                ),
-                "ECR_NAME": codebuild.BuildEnvironmentVariable(
-                    value=webgoat_ecr_repository.repository_name
+                    value=behave_ecr_repository.repository_uri
                 ),
                 "AWS_ACCOUNT_ID": codebuild.BuildEnvironmentVariable(
                     value=os.getenv("CDK_DEFAULT_ACCOUNT") or ""
                 ),
             },
         )
-        webgoat_ecr_repository.grant_pull_push(codebuild_webgoat_deploy)
+        behave_ecr_repository.grant_pull_push(codebuild_behave_image_build)
 ```
 
-### 5.2 Behave Tese Case 
+## 6.2. Behave Tese Case 
 
 ```bash
 Feature: Evaluate response header for a specific endpoint.
@@ -391,17 +381,16 @@ Feature: Evaluate response header for a specific endpoint.
     - The value of the "X-Frame-Options" header should be in the given set.
 - @runner.continue_after_failed_step: This is a Behave annotation that instructs the test runner to continue executing the remaining steps in the scenario even if one of the steps fails.
 
-#### 5.2.1 OTP demo using Behave
+### 6.2.1. OTP demo using Behave
 
-
-### Challenge
+# 7. Challenge
 
 1. Update your CodeBuild name in the Groovy script and reflect the changes in the Jenkins Master.
     - update the codebuild
     - update createJobs.groovy to your repo
 2. add the webgoat deploy into the jenkins pipeline
 
-## Clean up Action
+# 8. Clean up Action
 
 To perform a clean action, follow these steps:
 
@@ -412,7 +401,7 @@ To perform a clean action, follow these steps:
 3. Check the Log group for any remaining logs.
 4. check you bill in next day
 
-## Reference
+# 9. Reference
 
 - [AWS Jenkins ECS CDK Sample](https://github.com/aws-samples/aws-jenkins-ecs-cdk)
 - [Deploy your own production-ready Jenkins in AWS ECS](https://jenkinshero.com/deploy-jenkins-into-aws-ecs/)
