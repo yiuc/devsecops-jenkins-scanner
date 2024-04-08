@@ -174,6 +174,15 @@ jenkins-master-image
 
 #### 4.2.2 Jenkins in CDK
 
+This code sets up the following resources:
+
+- An ECS cluster named "jenkins-cluster"
+- An EFS file system named "JenkinsFileSystem"
+- An ECS task definition named "jenkins-task-definition" with a memory limit of 4096 MB and 2048 CPU units
+- A volume named "jenkins-home" configured to use the EFS file system with transit encryption and access point-based authorization
+- A container named "jenkins" that uses an image from an ECR repository named "jenkins-master" with the "latest" tag
+- Logging configuration for the container to send logs to CloudWatch Logs with the stream prefix "jenkins"
+
 ```py
         cluster = ecs.Cluster(
             self, "jenkins-cluster", vpc=vpc, cluster_name="jenkins-cluster"
@@ -236,6 +245,8 @@ jenkins-master-image
 
 #### 5.1.1 Build spce
 
+This BuildSpec file sets up the Docker environment, authenticates with ECR, pulls a Docker image from ECR, runs behave command inside the Docker container , and captures the output of that command. It is commonly used for building and testing containerized applications within the AWS CodeBuild service.
+
 ```yaml
 version: 0.2
 
@@ -272,34 +283,75 @@ phases:
 
 #### 5.1.2 codebuild in CDK
 
+This code creates an IAM role with necessary permissions for CodeBuild, CloudFormation, Systems Manager, ECS, and ECR. It then creates a CodeBuild project named "WebgoatDeploy" with a build specification file codebuild_webgoat_deploy_buildspec.yaml. The project sources are retrieved from an S3 bucket, and the build environment is configured for Amazon Linux 2.5 with a medium compute type and privileged mode. The project is granted permissions to pull and push images to the WebGoat ECR repository, and environment variables are set for the ECR repository URI, name, and AWS account ID.
+
 ```py
-        # code build project for execute joern
-        codebuild_joern = codebuild.Project(
-            self,
-            "JoernScan",
-            build_spec=codebuild.BuildSpec.from_asset("codebuild_joern_buildspec.yaml"),
-            source=codebuild.Source.s3(
-                bucket=s3_bucket, path="BuildImage74257FD8-G2bjbCQI8qQK/59/results.zip"
+        # code build project for execute codebuild_behave_image_build_buildspec.yaml
+        # Create the IAM role for CodeBuild
+        # Define the policy statements
+        policy_statements = [
+            iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                actions=[
+                    "iam:PassRole",
+                    "sts:AssumeRole"
+                ],
+                resources=["*"]
             ),
+        ]
+        # Create the policy
+        policy = iam.Policy(
+            self,
+            "CodeBuildPolicy",
+            statements=policy_statements
+        )
+        codebuild_role = iam.Role(
+            self,
+            "CodeBuildRole",
+            assumed_by=iam.ServicePrincipal("codebuild.amazonaws.com"),
+            managed_policies=[
+                iam.ManagedPolicy.from_aws_managed_policy_name("AWSCodeBuildAdminAccess"),
+                iam.ManagedPolicy.from_aws_managed_policy_name("AWSCloudFormationFullAccess"),
+                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSSMFullAccess"),
+                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonECS_FullAccess"),
+                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonEC2ContainerRegistryFullAccess"),
+            ]
+        )
+        iam.Policy.attach_to_role(policy, role=codebuild_role)
+        codebuild_webgoat_deploy = codebuild.Project(
+            self,
+            "WebgoatDeploy",
+            build_spec=codebuild.BuildSpec.from_asset(
+                "codebuild_webgoat_deploy_buildspec.yaml"
+            ),
+            source=codebuild.Source.s3(
+                bucket=s3_bucket, path="BuildImage74257FD8-JVpbhJo0Prh0/4/results.zip"
+            ),
+            role=codebuild_role,
+            secondary_sources=secondary_sources,
             environment=codebuild.BuildEnvironment(
-                privileged=True,
-                compute_type=codebuild.ComputeType.SMALL,
                 build_image=codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
+                compute_type=codebuild.ComputeType.MEDIUM,
+                privileged=True,
             ),
             environment_variables={
+                "ECR_URL": codebuild.BuildEnvironmentVariable(
+                    value=webgoat_ecr_repository.repository_uri
+                ),
+                "ECR_NAME": codebuild.BuildEnvironmentVariable(
+                    value=webgoat_ecr_repository.repository_name
+                ),
                 "AWS_ACCOUNT_ID": codebuild.BuildEnvironmentVariable(
                     value=os.getenv("CDK_DEFAULT_ACCOUNT") or ""
                 ),
-                "REGION": codebuild.BuildEnvironmentVariable(
-                    value=os.getenv("CDK_DEFAULT_REGION") or ""
-                ),
             },
         )
+        webgoat_ecr_repository.grant_pull_push(codebuild_webgoat_deploy)
 ```
 
 ### 5.2 Behave Tese Case 
 
-```
+```bash
 Feature: Evaluate response header for a specific endpoint.
 
   Background: Set endpoint and base URL
@@ -320,11 +372,24 @@ Feature: Evaluate response header for a specific endpoint.
 
     When I make a GET request to "WebGoat"
     Then the value of header "Cache-Control" should contain the defined value in the given set
-    #And the the value of header "Strict-Transport-Security" should be in the given set
-    #And the value of header "Content-Security-Policy" should be in the given set
-    #And the value of header "X-Content-Type-Options" should be in the given set
-    #And the value of header "X-Frame-Options" should be in the given set
+    And the the value of header "Strict-Transport-Security" should be in the given set
+    And the value of header "Content-Security-Policy" should be in the given set
+    And the value of header "X-Content-Type-Options" should be in the given set
+    And the value of header "X-Frame-Options" should be in the given set
 ```
+
+- Feature: The test case is part of the feature "Evaluate response header for a specific endpoint."
+- Background: This section sets up the environment for the test case by defining the endpoint and base URL. The endpoint is set to the value of the environment variable $APP_URL, and the base URL is set to "/".
+- Scenario: The scenario is named "Check response headers."
+- Given: This step sets up a table of specific headers and their expected values. The table contains seven rows, each representing a header key and its corresponding value.
+- When: This step performs a GET request to the "WebGoat" endpoint.
+- Then: This section contains multiple assertions to verify the response headers:
+    - The value of the "Cache-Control" header should contain the defined value in the given set.
+    - The value of the "Strict-Transport-Security" header should be in the given set.
+    - The value of the "Content-Security-Policy" header should be in the given set.
+    - The value of the "X-Content-Type-Options" header should be in the given set.
+    - The value of the "X-Frame-Options" header should be in the given set.
+- @runner.continue_after_failed_step: This is a Behave annotation that instructs the test runner to continue executing the remaining steps in the scenario even if one of the steps fails.
 
 #### 5.2.1 OTP demo using Behave
 
@@ -334,7 +399,7 @@ Feature: Evaluate response header for a specific endpoint.
 1. Update your CodeBuild name in the Groovy script and reflect the changes in the Jenkins Master.
     - update the codebuild
     - update createJobs.groovy to your repo
-2. Collect the CodeBuild logs and display them in Jenkins.
+2. add the webgoat deploy into the jenkins pipeline
 
 ## Clean up Action
 

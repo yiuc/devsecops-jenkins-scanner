@@ -64,9 +64,9 @@ pipeline {
         BRANCH_NAME = sh(script: "echo ${env.GIT_BRANCH} | awk -F'/' '{print \$NF}'", returnStdout: true).trim()
     }
     stages {
-        stage('Build and Deploy'){
+        stage('Build And Deploy'){
             parallel{
-                stage('Build webgoat jar') {
+                stage('Complie Webgoat Jar') {
                     steps {
                         script{
                             def output = runProjectBuild(params.WEBGOAT_PROJECTNAME)
@@ -75,7 +75,7 @@ pipeline {
                         }
                     }
                 }
-                stage('Behave image build') {
+                stage('Behave Image Build') {
                     steps {
                         script{
                             echo "Build number is ${currentBuild.number}"
@@ -87,7 +87,7 @@ pipeline {
         }
         stage('Scanning'){
             parallel{
-                stage('Joern scan webgoat') {
+                stage('Joern Scan Webgoat') {
                     steps {
                         script{
                             echo "Build number is ${currentBuild.number}"
@@ -95,7 +95,7 @@ pipeline {
                         }
                     }
                 }
-                stage('Behave test webgoat') {
+                stage('Behave Test Webgoat') {
                     steps {
                         script{
                             echo "Build number is ${currentBuild.number}"
