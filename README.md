@@ -20,8 +20,8 @@ This guide provides step-by-step instructions for setting up a DevSecOps Jenkins
     - [6.1.1. Build spce](#611-build-spce)
     - [6.1.2. codebuild in CDK](#612-codebuild-in-cdk)
   - [6.2. Behave Tese Case](#62-behave-tese-case)
-    - [6.2.1. OTP demo using Behave](#621-otp-demo-using-behave)
-- [7. Challenge](#7-challenge)
+    - [6.2.1. OTP demo using Behave (Optional)](#621-otp-demo-using-behave-optional)
+- [7. Challenge (Optional)](#7-challenge-optional)
 - [8. Clean up Action](#8-clean-up-action)
 - [9. Reference](#9-reference)
 
@@ -107,7 +107,7 @@ Follow the steps below to install and configure the DevSecOps Jenkins scanner.
 2. Fork the GitHub repository, generate an SSH access key (`ssh-keygen -t rsa`), and add your SSH public key to the repository's "Deploy Keys" section to grant access rights.
 3. Download the source code from your forked repository: `git clone git@github.com:$YOURID/devsecops-jenkins-scanner`
 4. Modify the repository name: `find . -type f -exec sed -i "s/yiuc/$YOURID/g" {} +`
-5. Create a private ECR repository for the "jenkins-master" image:
+<!-- 5. Create a private ECR repository for the "jenkins-master" image:
 
     ```bash
     aws ecr create-repository --repository-name jenkins-master --image-scanning-configuration scanOnPush=false --region $AWS_REGION
@@ -125,7 +125,7 @@ Follow the steps below to install and configure the DevSecOps Jenkins scanner.
 
     ```bash
     aws ecr list-images --repository-name jenkins-master --region $AWS_REGION --output table
-    ```
+    ``` -->
 
 ### 5.1.2. Provision AWS Resources
 
@@ -381,9 +381,9 @@ Feature: Evaluate response header for a specific endpoint.
     - The value of the "X-Frame-Options" header should be in the given set.
 - @runner.continue_after_failed_step: This is a Behave annotation that instructs the test runner to continue executing the remaining steps in the scenario even if one of the steps fails.
 
-### 6.2.1. OTP demo using Behave
+### 6.2.1. OTP demo using Behave (Optional)
 
-# 7. Challenge
+# 7. Challenge (Optional)
 
 1. Update your CodeBuild name in the Groovy script and reflect the changes in the Jenkins Master.
     - update the codebuild

@@ -1,0 +1,7 @@
+aws-codebuild:latest
+authorize-project:latest
+job-dsl:latest
+workflow-aggregator:latest
+git:latest
+pipeline-stage-view:latest
+pipeline-graph-view:latest
