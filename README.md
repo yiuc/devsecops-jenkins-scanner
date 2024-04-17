@@ -75,7 +75,7 @@ Before starting the installation, ensure that the following prerequisites are me
 - An AWS account with CLI access (`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`)
 - A Linux-based platform (Recommended: [AWS Cloud9](https://aws.amazon.com/pm/cloud9/))
 - Docker installed
-- Fork the https://github.com/yiuc/devsecops-jenkins-scanner repository under your GitHub account, as you will need to make changes to the repository
+- Fork the https://github.com/yiuc/devsecops-jenkins-scanner [repository](https://github.com/yiuc/devsecops-jenkins-scanner) under your GitHub account, as you will need to make changes to the repository. Shortenurl - https://bit.ly/apr26
 
 # 5. Provision AWS resources
 

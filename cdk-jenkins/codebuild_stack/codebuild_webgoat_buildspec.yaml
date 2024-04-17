@@ -1,0 +1,25 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      java: corretto17
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws --version
+      - pwd && ls -l
+  build:
+    commands:
+      - echo Building the WebGoat jar...
+      - ./mvnw clean install
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - echo post build of webgoat...
+      - ls -l
+artifacts:
+  files:
+    - 'target/*.jar'
+  s3-prefix: $CODEBUILD_BUILD_NUMBER
+  discard-paths: yes

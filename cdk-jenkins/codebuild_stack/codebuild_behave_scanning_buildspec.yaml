@@ -1,0 +1,31 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - nohup /usr/local/bin/dockerd --host=unix:///var/run/docker.sock --host=tcp://127.0.0.1:2375 --storage-driver=overlay2 &
+      - timeout 15 sh -c "until docker info; do echo .; sleep 1; done"
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+      - aws --version
+      - pwd && ls -lR
+  build:
+    commands:
+      - echo Build started on `date`
+      - echo Running your command in Docker...
+      - docker pull $ECR_URL:latest
+      - |
+        docker run \
+          --rm \
+          -e APP_URL=$APP_URL \
+          -e PYTHONPATH=/app/behave/libs \
+          -v $(pwd):/app \
+          $ECR_URL:latest \
+          behave /app/behave/features | tee output.txt
+      - echo "Command output:"
+      - cat output.txt
+  post_build:
+    commands:
+      - echo Build completed on `date`

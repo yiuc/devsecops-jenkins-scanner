@@ -65,7 +65,7 @@ class CodeBuildStack(Stack):
             self,
             "BuildImage",
             build_spec=codebuild.BuildSpec.from_asset(
-                "codebuild_webgoat_buildspec.yaml"
+                "codebuild_stack/codebuild_webgoat_buildspec.yaml"
             ),
             source=codebuild.Source.git_hub(owner=source_owner, repo="WebGoat"),
             # artifacts=codebuild.Artifacts.s3(bucket=s3_bucket,package_zip=True,encryption=False),
@@ -89,7 +89,7 @@ class CodeBuildStack(Stack):
         codebuild_joern = codebuild.Project(
             self,
             "JoernScan",
-            build_spec=codebuild.BuildSpec.from_asset("codebuild_joern_buildspec.yaml"),
+            build_spec=codebuild.BuildSpec.from_asset("codebuild_stack/codebuild_joern_buildspec.yaml"),
             source=codebuild.Source.s3(
                 bucket=s3_bucket, path="BuildImage74257FD8-G2bjbCQI8qQK/59/results.zip"
             ),
@@ -115,7 +115,7 @@ class CodeBuildStack(Stack):
             self,
             "BehaveImageBuild",
             build_spec=codebuild.BuildSpec.from_asset(
-                "codebuild_behave_image_build_buildspec.yaml"
+                "codebuild_stack/codebuild_behave_image_build_buildspec.yaml"
             ),
             source=codebuild.Source.git_hub(
                 owner="yiuc", repo="devsecops-jenkins-scanner", branch_or_ref=branch_or_ref
@@ -177,7 +177,7 @@ class CodeBuildStack(Stack):
             self,
             "WebgoatDeploy",
             build_spec=codebuild.BuildSpec.from_asset(
-                "codebuild_webgoat_deploy_buildspec.yaml"
+                "codebuild_stack/codebuild_webgoat_deploy_buildspec.yaml"
             ),
             source=codebuild.Source.s3(
                 bucket=s3_bucket, path="BuildImage74257FD8-JVpbhJo0Prh0/4/results.zip"
@@ -208,7 +208,7 @@ class CodeBuildStack(Stack):
             self,
             "BehaveScanning",
             build_spec=codebuild.BuildSpec.from_asset(
-                "codebuild_behave_scanning_buildspec.yaml"
+                "codebuild_stack/codebuild_behave_scanning_buildspec.yaml"
             ),
             source=codebuild.Source.git_hub(
                 owner="yiuc", repo="devsecops-jenkins-scanner", branch_or_ref=branch_or_ref
@@ -237,7 +237,7 @@ class CodeBuildStack(Stack):
             self,
             "GauntltTest",
             build_spec=codebuild.BuildSpec.from_asset(
-                "codebuild_gauntlt_buildspec.yaml"
+                "codebuild_stack/codebuild_gauntlt_buildspec.yaml"
             ),
             source=codebuild.Source.git_hub(
                 owner="yiuc", repo="devsecops-jenkins-scanner"
