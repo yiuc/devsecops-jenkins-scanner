@@ -24,7 +24,7 @@ class Vpc(Construct):
             id="ECSVPC",
             subnet_configuration=self.subnet_configuration,
             max_azs=2,
-            cidr="10.18.0.0/16",
+            ip_addresses=ec2.IpAddresses.cidr("10.18.0.0/16"),
             enable_dns_hostnames=True,
             enable_dns_support=True,
             nat_gateways=2,
@@ -37,7 +37,7 @@ class Vpc(Construct):
             cidr_mask=24
         ),
             ec2.SubnetConfiguration(
-            subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT,
+            subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS,
             name="Private",
             cidr_mask=24
         )
