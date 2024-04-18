@@ -209,6 +209,11 @@ This code sets up the following resources:
 - Logging configuration for the container to send logs to CloudWatch Logs with the stream prefix "jenkins"
 
 ```py
+
+        current_dir = os.path.dirname(__file__)
+        asset = DockerImageAsset(self, "jenkins-master",
+                                 directory=current_dir)
+
         cluster = ecs.Cluster(
             self, "jenkins-cluster", vpc=vpc, cluster_name="jenkins-cluster"
         )
@@ -338,6 +343,48 @@ This code sets up a CodeBuild project named BehaveImageBuild that builds a Docke
             },
         )
         behave_ecr_repository.grant_pull_push(codebuild_behave_image_build)
+```
+
+IAM role attach to the cd
+
+```py
+        # code build project for execute codebuild_behave_image_build_buildspec.yaml
+        # Create the IAM role for CodeBuild
+        # Define the policy statements
+        policy_statements = [
+            iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                actions=[
+                    "iam:PassRole",
+                    "sts:AssumeRole"
+                ],
+                resources=["*"]
+            ),
+        ]
+        # Create the policy
+        policy = iam.Policy(
+            self,
+            "CodeBuildPolicy",
+            statements=policy_statements
+        )
+        codebuild_role = iam.Role(
+            self,
+            "CodeBuildRole",
+            assumed_by=iam.ServicePrincipal("codebuild.amazonaws.com"),
+            managed_policies=[
+                iam.ManagedPolicy.from_aws_managed_policy_name("AWSCodeBuildAdminAccess"),
+                iam.ManagedPolicy.from_aws_managed_policy_name("AWSCloudFormationFullAccess"),
+                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSSMFullAccess"),
+                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonECS_FullAccess"),
+                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonEC2ContainerRegistryFullAccess"),
+            ]
+        )
+```
+
+Grant S3 accesst to Codebuild 
+
+```py
+s3_bucket.grant_read_write(codebuild_joern)
 ```
 
 ## 6.2. Behave Tese Case 
