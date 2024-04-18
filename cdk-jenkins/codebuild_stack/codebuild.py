@@ -265,4 +265,5 @@ class CodeBuildStack(Stack):
         CfnOutput(self, "BehaveImageBuildProjectName", value=codebuild_behave_image_build.project_name)
         CfnOutput(self, "BehaveScanningProjectName", value=codebuild_behave_scanning.project_name)
         CfnOutput(self, "BehaveECR",value=behave_ecr_repository.repository_uri)
+        CfnOutput(self, "WebgoatDeployProjectName",value=codebuild_webgoat_deploy.project_name)
         CfnOutput(self, "S3ArtifactName", value=s3_bucket.bucket_name)

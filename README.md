@@ -107,6 +107,7 @@ Follow the steps below to install and configure the DevSecOps Jenkins scanner.
 2. Fork the GitHub repository, generate an SSH access key (`ssh-keygen -t rsa`), and add your SSH public key to the repository's "Deploy Keys" section to grant access rights.
 3. Download the source code from your forked repository: `git clone git@github.com:$YOURID/devsecops-jenkins-scanner`
 4. Modify the repository name: `find . -type f -exec sed -i "s/yiuc/$YOURID/g" {} +`
+5. `git add . && git commit -m "YOUR MESSAGE" && git push`
 <!-- 5. Create a private ECR repository for the "jenkins-master" image:
 
     ```bash
