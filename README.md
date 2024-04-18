@@ -105,7 +105,7 @@ Follow the steps below to install and configure the DevSecOps Jenkins scanner.
     ```
 
 2. Fork the GitHub repository, generate an SSH access key (`ssh-keygen -t rsa`), and add your SSH public key to the repository's "Deploy Keys" section to grant access rights.
-3. Download the source code from your forked repository: `git clone git@github.com:$YOURID/devsecops-jenkins-scanner`
+3. Download the source code from your forked repository: `git clone git@github.com:$YOURID/devsecops-jenkins-scanner` and `cd devsecops-jenkins-scanner`
 4. Modify the repository name: `find . -type f -exec sed -i "s/yiuc/$YOURID/g" {} +`
 5. `git add . && git commit -m "YOUR MESSAGE" && git push`
 <!-- 5. Create a private ECR repository for the "jenkins-master" image:
@@ -132,9 +132,9 @@ Follow the steps below to install and configure the DevSecOps Jenkins scanner.
 
 Follow the steps below to install and configure the DevSecOps Jenkins scanner:
 
-1. Copy the `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` into the Cloud9 environment and set the environment variables:
+1. Setup additional environment variable
 
-    `curl ifconfig.io` get your local IP address
+    `curl ifconfig.io` get your local IP address and create env var in cloud9 `export YOURIP=XXX.XXX.XXX.XXX`
 
     ```bash
     export AWS_PAGER= ;\
@@ -389,7 +389,8 @@ Feature: Evaluate response header for a specific endpoint.
 1. Update your CodeBuild name in the Groovy script and reflect the changes in the Jenkins Master.
     - update the codebuild
     - update createJobs.groovy to your repo
-2. add the webgoat deploy into the jenkins pipeline
+2. Fix the access denied issue in CDK 
+3. add the webgoat deploy into the jenkins pipeline
 
 # 8. Clean up Action
 

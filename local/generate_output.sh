@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -x
+
 # that is the function to update the codebuild id 
 cd cdk-jenkins
 output=$(aws cloudformation describe-stacks \
