@@ -165,7 +165,7 @@ Follow the steps below to install and configure the DevSecOps Jenkins scanner:
     
     ```bash
     cdk synth --context current_ip=$CURRENT_IP
-    cdk deploy --context current_ip=$CURRENT_IP --require-approval never --all
+    cdk deploy --context current_ip=$CURRENT_IP --require-approval never --progress events  --all
     #cdk deploy --context branch_or_ref=develop --context current_ip=$CURRENT_IP --all #with confirmation
     ```
 
