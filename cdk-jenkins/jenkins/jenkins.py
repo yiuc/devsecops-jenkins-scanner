@@ -46,6 +46,15 @@ class JenkinsMasterStack(Stack):
             "Resource": "*"
         })
 
+       # Create a policy statement to allow the ECS container to access CloudWatch Logs
+        log_policy_statement = iam.PolicyStatement(
+            effect=iam.Effect.ALLOW,
+            actions=[
+                "logs:*"
+            ],
+            resources=["*"],
+        )
+
         task_definition = ecs.FargateTaskDefinition(
             self,
             "jenkins-task-definition",
@@ -66,7 +75,9 @@ class JenkinsMasterStack(Stack):
         )
 
         task_definition.add_to_task_role_policy(codebuild_policy)
+        task_definition.add_to_task_role_policy(log_policy_statement)
         task_definition.add_to_execution_role_policy(codebuild_policy)
+        task_definition.add_to_execution_role_policy(log_policy_statement)
 
         current_dir = os.path.dirname(__file__)
         asset = DockerImageAsset(self, "jenkins-master",

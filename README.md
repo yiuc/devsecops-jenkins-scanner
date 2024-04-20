@@ -472,4 +472,4 @@ To perform a clean action, follow these steps:
 - [Integrating AWS CodeBuild into Jenkins pipelines](https://jenkinshero.com/integrating-aws-codebuild-into-jenkins-pipelines/)
 - [Environments - AWS Cloud Development Kit (AWS CDK) v2](https://docs.aws.amazon.com/cdk/v2/guide/environments.html)
 - [AWS CDK Toolkit (cdk command) - AWS Cloud Development Kit (AWS CDK) v2](https://docs.aws.amazon.com/cdk/v2/guide/cli.html#cli-config)
-
+- [aws-samples/jenkins-on-aws](https://github.com/aws-samples/jenkins-on-aws/tree/main)

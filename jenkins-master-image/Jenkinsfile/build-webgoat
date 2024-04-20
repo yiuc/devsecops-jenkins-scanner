@@ -72,7 +72,7 @@ pipeline {
                     steps {
                         script{
                             def output = runProjectBuild(params.WEBGOAT_PROJECTNAME)
-                            //sh "aws codebuild batch-get-builds --ids ${output} --output text --query 'builds[].logs.groupName' | xargs -I {} aws logs tail {} --output text"
+                            sh "aws codebuild batch-get-builds --ids ${output} --output text --query 'builds[].logs.groupName' | xargs -I {} aws logs tail {} --output text"
                             sh "unzip -o ./${params.WEBGOAT_PROJECTNAME}/${BUILD_ID}/results.zip -d ."
                         }
                     }
@@ -82,6 +82,7 @@ pipeline {
                         script{
                             echo "Build number is ${currentBuild.number}"
                             def output = runProjectBuild(params.BEHAVE_IMAGE_BUILD_PROJECTNAME)
+                            sh "aws codebuild batch-get-builds --ids ${output} --output text --query 'builds[].logs.groupName' | xargs -I {} aws logs tail {} --output text"
                         }
                     }
                 }
@@ -101,6 +102,7 @@ pipeline {
                         script{
                             echo "Build number is ${currentBuild.number}"
                             def output = runS3Build(params.JOERN_PROJECTNAME)
+                            sh "aws codebuild batch-get-builds --ids ${output} --output text --query 'builds[].logs.groupName' | xargs -I {} aws logs tail {} --output text"
                         }
                     }
                 }
@@ -109,6 +111,7 @@ pipeline {
                         script{
                             echo "Build number is ${currentBuild.number}"
                             def output = runProjectBuild(params.BEHAVE_PROJECTNAME)
+                            sh "aws codebuild batch-get-builds --ids ${output} --output text --query 'builds[].logs.groupName' | xargs -I {} aws logs tail {} --output text"
                         }
                     }
                 }
