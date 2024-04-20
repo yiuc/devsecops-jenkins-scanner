@@ -58,7 +58,6 @@ pipeline {
         string(name: 'BEHAVE_PROJECTNAME', defaultValue: '%BehaveScanningProjectName', description: 'CodeBuild project name')
         string(name: 'BEHAVE_IMAGE_BUILD_PROJECTNAME', defaultValue: '%BehaveImageBuildProjectName', description: 'CodeBuild project name')
         string(name: 'WEBGOAT_PROJECTNAME', defaultValue: '%WebGoatBuildProjectName', description: 'CodeBuild project name')
-        string(name: 'WEBGOAT_DEPLOY_PROJECTNAME', defaultValue: '%WebgoatDeployProjectName', description: 'CodeBuild project name')
         string(name: 'JOERN_PROJECTNAME', defaultValue: '%JoernScanProjectName', description: 'CodeBuild project name')
         string(name: 'ARTIFACT_S3', defaultValue: '%S3ArtifactName', description: 'CodeBuild artifact bucket')
         choice(name: 'AWS_REGION', choices: ['ap-southeast-1'], description: 'AWS region')
