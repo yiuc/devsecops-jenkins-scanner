@@ -20,8 +20,9 @@ This guide provides step-by-step instructions for setting up a DevSecOps Jenkins
     - [6.1.1. Build spce](#611-build-spce)
     - [6.1.2. codebuild in CDK](#612-codebuild-in-cdk)
   - [6.2. Behave Tese Case](#62-behave-tese-case)
-    - [6.2.1. OTP demo using Behave (Optional)](#621-otp-demo-using-behave-optional)
-- [7. Challenge (Optional)](#7-challenge-optional)
+- [7. Advance Task (Optional)](#7-advance-task-optional)
+  - [7.1 Challenge (Optional)](#71-challenge-optional)
+  - [7.2. OTP demo using Behave (Optional)](#72-otp-demo-using-behave-optional)
 - [8. Clean up Action](#8-clean-up-action)
 - [9. Reference](#9-reference)
 
@@ -392,6 +393,12 @@ s3_bucket.grant_read_write(codebuild_joern)
 
 ## 6.2. Behave Tese Case 
 
+Use case: 
+- Compliance-Based Test Cases: These test cases are directly derived from compliance requirements, ensuring that the application or system under test adheres to the specified regulations or standards.
+- Business-Driven Test Cases: In addition to compliance requirements, these test cases focus on business-specific security concerns and non-security-related aspects that are critical to the organization.
+- Vulnerability-Specific Test Cases: These test cases are designed to identify and validate specific vulnerabilities that may be present in the application or system under test.
+- False Positive Verification Test Cases: These test cases aim to verify and prove the validity of any false positive findings reported by security testing tools or processes.
+
 ```bash
 Feature: Evaluate response header for a specific endpoint.
 
@@ -432,15 +439,16 @@ Feature: Evaluate response header for a specific endpoint.
     - The value of the "X-Frame-Options" header should be in the given set.
 - @runner.continue_after_failed_step: This is a Behave annotation that instructs the test runner to continue executing the remaining steps in the scenario even if one of the steps fails.
 
-### 6.2.1. OTP demo using Behave (Optional)
 
-# 7. Challenge (Optional)
+# 7. Advance Task (Optional)
 
-1. Update your CodeBuild name in the Groovy script and reflect the changes in the Jenkins Master.
-    - update the codebuild
-    - update createJobs.groovy to your repo
-2. Fix the access denied issue in CDK 
-3. add the webgoat deploy into the jenkins pipeline
+## 7.1 Challenge (Optional)
+
+1. Fix the access denied issue in CDK 
+2. Add the webgoat deployment into the jenkins pipeline
+3. Fix the webgoat don't pass the behave, [hint](https://www.stackhawk.com/blog/spring-http-strict-transport-security-guide-what-it-is-and-how-to-enable-it/)
+
+## 7.2. OTP demo using Behave (Optional)
 
 # 8. Clean up Action
 
