@@ -107,7 +107,7 @@ Follow the steps below to install and configure the DevSecOps Jenkins scanner.
 2. Fork the GitHub repository, generate an SSH access key (`ssh-keygen -t rsa`), and add your SSH public key to the repository's "Deploy Keys" section to grant access rights.
 3. Download the source code from your forked repository: `git clone git@github.com:$YOURID/devsecops-jenkins-scanner` and `cd devsecops-jenkins-scanner`
 4. Modify the repository name: `find . -type f -exec sed -i "s/yiuc/$YOURID/g" {} +`
-5. `git add . && git commit -m "update\nchange the repo name" && git push`
+5. `git add . && git commit -m "update" -m "change the repo name" && git push`
 <!-- 5. Create a private ECR repository for the "jenkins-master" image:
 
     ```bash
@@ -179,7 +179,7 @@ Follow the steps below to install and configure the DevSecOps Jenkins scanner:
 
 
 5. Update the codebuild project variable `bash local/generate_output.sh` 
-6. `git add . && git commit -m "update\nconfig the codebuild name" && git push`
+6. `git add . && git commit -m "update" -m "config the codebuild name" && git push`
 
 7. Capture the `JenkinsMasterStack.LoadBalancerDNSName` output to access the Jenkins Master server
 
@@ -450,8 +450,9 @@ To perform a clean action, follow these steps:
 
     `cdk destroy --all`
 2. Manual clean up ECR and S3
-3. Check the Log group for any remaining logs.
-4. check you bill in next day
+3. Remove the cloud9 environment
+4. Check the Log group for any remaining logs.
+5. check you bill in next day
 
 # 9. Reference
 

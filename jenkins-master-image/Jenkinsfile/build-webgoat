@@ -64,7 +64,7 @@ pipeline {
         BRANCH_NAME = sh(script: "echo ${env.GIT_BRANCH} | awk -F'/' '{print \$NF}'", returnStdout: true).trim()
     }
     stages {
-        stage('Build And Deploy'){
+        stage('Build'){
             parallel{
                 stage('Complie Webgoat Jar') {
                     steps {
