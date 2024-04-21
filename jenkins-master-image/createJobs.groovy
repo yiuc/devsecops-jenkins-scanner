@@ -22,7 +22,7 @@ pipelineJob('AWS CodeBuild webgoat') {
                         url 'https://github.com/yiuc/devsecops-jenkins-scanner.git'
                     }
                     branch 'main'
-                    scriptPath('jenkins-master-image/Jenkinsfile/codebuild-webgoat')
+                    scriptPath('jenkins-master-image/Jenkinsfile/build-webgoat')
                 }
             }
         }

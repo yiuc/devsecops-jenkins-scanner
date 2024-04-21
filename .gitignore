@@ -163,3 +163,5 @@ cython_debug/
 cdk.context.json
 **/.DS_Store
 *.bkp
+
+demo/

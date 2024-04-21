@@ -1,0 +1,121 @@
+def runProjectBuild(String projectname) {
+    script {
+        def result = null
+        try {
+            result = awsCodeBuild(credentialsType: 'keys', 
+                projectName: "${projectname}", 
+                region: "${params.AWS_REGION}", 
+                sourceControlType: 'project',
+                sourceVersion: "${env.BRANCH_NAME}",
+                artifactTypeOverride: 'S3',
+                artifactPackagingOverride: 'ZIP',
+                artifactLocationOverride: "${params.ARTIFACT_S3}",
+                artifactPathOverride: "${projectname}/${BUILD_ID}",
+                artifactNameOverride: 'results.zip',
+                downloadArtifacts: 'true')
+            sh "echo ${result.getArtifactsLocation()}"
+            sh "echo ${result.getBuildId()}"
+            return result.getBuildId()
+        } catch (Exception e) {
+            result=e.getCodeBuildResult()
+            currentBuild.result = 'FAILURE'
+            throw e
+        }
+    }
+}
+
+def runS3Build(String projectname) {
+    script {
+        def result = null
+        try {
+            result = awsCodeBuild(credentialsType: 'keys', 
+                projectName: "${projectname}", 
+                region: "${params.AWS_REGION}", 
+                sourceControlType: 'jenkins', 
+                artifactTypeOverride: 'S3',
+                artifactPackagingOverride: 'ZIP',
+                artifactLocationOverride: "${params.ARTIFACT_S3}",
+                artifactPathOverride: "${projectname}/${BUILD_ID}",
+                sourceLocationOverride: "${params.ARTIFACT_S3}/${params.WEBGOAT_PROJECTNAME}/${BUILD_ID}/results.zip", 
+                localSourcePath: "./${params.WEBGOAT_PROJECTNAME}/${BUILD_ID}/results.zip",
+                sourceTypeOverride: 'S3',
+                artifactNameOverride: 'output.zip',
+                downloadArtifacts: 'true')
+            sh "echo ${result.getArtifactsLocation()}"
+            sh "echo ${result.getBuildId()}"
+            return result.getBuildId()
+        } catch (Exception e) {
+            result=e.getCodeBuildResult()
+            currentBuild.result = 'FAILURE'
+            throw e
+        }
+    }    
+}
+
+pipeline {
+    agent any
+    parameters {
+        string(name: 'BEHAVE_PROJECTNAME', defaultValue: '%BehaveScanningProjectName', description: 'CodeBuild project name')
+        string(name: 'BEHAVE_IMAGE_BUILD_PROJECTNAME', defaultValue: '%BehaveImageBuildProjectName', description: 'CodeBuild project name')
+        string(name: 'WEBGOAT_PROJECTNAME', defaultValue: '%WebGoatBuildProjectName', description: 'CodeBuild project name')
+        string(name: 'JOERN_PROJECTNAME', defaultValue: '%JoernScanProjectName', description: 'CodeBuild project name')
+        string(name: 'ARTIFACT_S3', defaultValue: '%S3ArtifactName', description: 'CodeBuild artifact bucket')
+        choice(name: 'AWS_REGION', choices: ['ap-southeast-1'], description: 'AWS region')
+    }
+    environment {
+        BRANCH_NAME = sh(script: "echo ${env.GIT_BRANCH} | awk -F'/' '{print \$NF}'", returnStdout: true).trim()
+    }
+    stages {
+        stage('Build'){
+            parallel{
+                stage('Complie Webgoat Jar') {
+                    steps {
+                        script{
+                            def output = runProjectBuild(params.WEBGOAT_PROJECTNAME)
+                            sh "aws codebuild batch-get-builds --ids ${output} --output text --query 'builds[].logs.groupName' | xargs -I {} aws logs tail {} --output text"
+                            sh "unzip -o ./${params.WEBGOAT_PROJECTNAME}/${BUILD_ID}/results.zip -d ."
+                        }
+                    }
+                }
+                stage('Behave Image Build') {
+                    steps {
+                        script{
+                            echo "Build number is ${currentBuild.number}"
+                            def output = runProjectBuild(params.BEHAVE_IMAGE_BUILD_PROJECTNAME)
+                            sh "aws codebuild batch-get-builds --ids ${output} --output text --query 'builds[].logs.groupName' | xargs -I {} aws logs tail {} --output text"
+                        }
+                    }
+                }
+            }
+        }
+        stage('Deploy'){
+            steps {
+                script{
+                    echo "Doing nothing, please add your task"
+                }
+            } 
+        }
+        stage('Scanning'){
+            parallel{
+                stage('Joern Scan Webgoat') {
+                    steps {
+                        script{
+                            echo "Build number is ${currentBuild.number}"
+                            def output = runS3Build(params.JOERN_PROJECTNAME)
+                            sh "aws codebuild batch-get-builds --ids ${output} --output text --query 'builds[].logs.groupName' | xargs -I {} aws logs tail {} --output text"
+                        }
+                    }
+                }
+                stage('Behave Test Webgoat') {
+                    steps {
+                        script{
+                            echo "Build number is ${currentBuild.number}"
+                            def output = runProjectBuild(params.BEHAVE_PROJECTNAME)
+                            sh "aws codebuild batch-get-builds --ids ${output} --output text --query 'builds[].logs.groupName' | xargs -I {} aws logs tail {} --output text"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

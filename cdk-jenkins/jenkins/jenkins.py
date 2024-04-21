@@ -8,8 +8,10 @@ from aws_cdk import (
     aws_iam as iam,
 )
 from constructs import Construct
+from aws_cdk.aws_ecr_assets import DockerImageAsset
 from aws_cdk import App, Stack, CfnOutput
 from aws_cdk import RemovalPolicy, Duration
+import os
 
 
 class JenkinsMasterStack(Stack):
@@ -44,6 +46,15 @@ class JenkinsMasterStack(Stack):
             "Resource": "*"
         })
 
+       # Create a policy statement to allow the ECS container to access CloudWatch Logs
+        log_policy_statement = iam.PolicyStatement(
+            effect=iam.Effect.ALLOW,
+            actions=[
+                "logs:*"
+            ],
+            resources=["*"],
+        )
+
         task_definition = ecs.FargateTaskDefinition(
             self,
             "jenkins-task-definition",
@@ -64,15 +75,21 @@ class JenkinsMasterStack(Stack):
         )
 
         task_definition.add_to_task_role_policy(codebuild_policy)
+        task_definition.add_to_task_role_policy(log_policy_statement)
         task_definition.add_to_execution_role_policy(codebuild_policy)
+        task_definition.add_to_execution_role_policy(log_policy_statement)
 
-        ecr_repository = ecr.Repository.from_repository_name(
-            self, "jenkins-master", "jenkins-master")
+        current_dir = os.path.dirname(__file__)
+        asset = DockerImageAsset(self, "jenkins-master",
+                                 directory=current_dir)
+
+        # ecr_repository = ecr.Repository.from_repository_name(
+        #     self, "jenkins-master", "jenkins-master")
 
         container_definition = task_definition.add_container(
             "jenkins",
-            #image=ecs.ContainerImage.from_registry("jenkins/jenkins:lts"),
-            image = ecs.ContainerImage.from_ecr_repository(ecr_repository, tag="latest"),
+            #image = ecs.ContainerImage.from_ecr_repository(ecr_repository, tag="latest"),
+            image=ecs.ContainerImage.from_docker_image_asset(asset),
             logging=ecs.LogDriver.aws_logs(stream_prefix="jenkins"),
         )
 

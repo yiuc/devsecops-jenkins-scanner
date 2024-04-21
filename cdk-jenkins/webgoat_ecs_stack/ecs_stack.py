@@ -5,6 +5,7 @@ from aws_cdk import (
     aws_codepipeline_actions as codepipeline_actions,
     aws_lambda as lambda_,
     aws_ecs as ecs,
+    aws_ecr as ecr,
     aws_servicediscovery as servicediscovery,
     aws_ec2 as ec2,
 )
@@ -73,13 +74,24 @@ class ECSstack(Stack):
             port_mappings=[ecs.PortMapping(container_port=3000)],
             command=["sh", "-c", "rails db:setup && rails server -b 0.0.0.0"],
         )
+        webgoat_registry=self.node.try_get_context("webgoat_registry") or "webgoat/webgoat-7.1"
 
-        webgoattaskDefinition.add_container(
-            id="AppContainer",
-            image=ecs.ContainerImage.from_registry("webgoat/webgoat-7.1"),
-            logging=ecs.LogDrivers.aws_logs(stream_prefix="webgoat"),
-            port_mappings=[ecs.PortMapping(container_port=8080)],
-        )
+        if webgoat_registry == "webgoat/webgoat-7.1":
+            webgoattaskDefinition.add_container(
+                id="AppContainer",
+                image=ecs.ContainerImage.from_registry(webgoat_registry),
+                logging=ecs.LogDrivers.aws_logs(stream_prefix="webgoat"),
+                port_mappings=[ecs.PortMapping(container_port=8080)],
+            )
+        else:
+            ecr_repository = ecr.Repository.from_repository_name(
+                self, webgoat_registry, webgoat_registry)
+            webgoattaskDefinition.add_container(
+                id="AppContainer",
+                image=ecs.ContainerImage.from_ecr_repository(ecr_repository, tag="latest"),
+                logging=ecs.LogDrivers.aws_logs(stream_prefix="webgoat"),
+                port_mappings=[ecs.PortMapping(container_port=8080)],
+            )     
 
         ecs_fargate_sg = ec2.SecurityGroup.from_security_group_id(
             self, "fargate_sg", ecs_security_group.security_group_id
