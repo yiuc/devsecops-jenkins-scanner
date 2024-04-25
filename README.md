@@ -191,14 +191,12 @@ Follow the steps below to install and configure the DevSecOps Jenkins scanner:
 
 ```
 jenkins-master-image
-├── Dockerfile - Docker file of Jenkins Master
 ├── Jenkinsfile - groovy script of pipeline
 │   ├── codebuild-webgoat
 │   ├── gauntlt-webgoat
 │   └── pipelinejob
 ├── createJobs.groovy - the seed job to provision the pipeline in Jenkins file
-├── plugins.txt - the plugin will be installed in Jenkins Master
-└── seedJob.xml - Basic setup and create the seedjob
+
 ```
 
 ### 5.2.2. Jenkins in CDK
